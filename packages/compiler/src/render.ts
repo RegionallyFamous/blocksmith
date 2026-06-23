@@ -35,22 +35,35 @@ export function renderSection(section: BlueprintSection, blueprint: Blueprint, c
     case "header":
       return group(
         [
-          `<div class="blocksmith-site-brand">${block("site-title", { level: 0 })}</div>`,
-          `<div class="blocksmith-site-nav">${block("navigation", { overlayMenu: "mobile" })}</div>`
+          `<div class="blocksmith-header-top"><span>Support local publishing</span><span>A noteworthy publication</span></div>`,
+          `<div class="blocksmith-masthead-row">
+  <p class="blocksmith-masthead-note">Local stories<br>from here<br>to everywhere</p>
+  <div class="blocksmith-site-brand">${block("site-title", { level: 0 })}<p class="blocksmith-dispatch-mark">Dispatch</p></div>
+  <p class="blocksmith-masthead-note blocksmith-masthead-note-right">Independent<br>and local<br>since 2026</p>
+</div>`,
+          `<div class="blocksmith-nav-row"><div class="blocksmith-site-nav">${block("navigation", { overlayMenu: "mobile" })}</div><span class="blocksmith-search-label">Search</span></div>`
         ].join("\n"),
-        { align: "full", className: "blocksmith-header", layout: { type: "flex", justifyContent: "space-between", flexWrap: "wrap" } }
+        { align: "full", className: "blocksmith-header" }
       );
     case "footer":
       return group(
         [
-          `<div>${block("site-title", { level: 0 })}</div>`,
-          `<div>${paragraph(section.text ?? "Built with WordPress.", { align: "right" })}</div>`
+          `<div class="blocksmith-footer-grid">
+  <div class="blocksmith-footer-about">${block("site-title", { level: 0 })}${paragraph(section.text ?? "Independent local publishing with uncommon polish.")}<a href="#">Our story -></a></div>
+  <div><p class="blocksmith-footer-label">Explore</p><a href="#">Dispatches</a><a href="#">Place notes</a><a href="#">People features</a><a href="#">Small legends</a></div>
+  <div><p class="blocksmith-footer-label">Info</p><a href="#">About</a><a href="#">Support us</a><a href="#">Advertise</a><a href="#">Contact</a></div>
+  <div class="blocksmith-footer-card"><p class="blocksmith-footer-label">The field tote</p><p>Everyday notes, library trips, and small errands.</p><a href="#">Shop merch -></a></div>
+</div>`,
+          `<div class="blocksmith-footer-bottom"><span>Built with WordPress.</span><span>Site by neighbors, not algorithms.</span></div>`
         ].join("\n"),
-        { align: "full", className: "blocksmith-footer", layout: { type: "flex", justifyContent: "space-between", flexWrap: "wrap" } }
+        { align: "full", className: "blocksmith-footer" }
       );
     case "hero":
       return hero(section, variant);
     case "intro":
+      if (variant === "editor-note") {
+        return editorNote(section);
+      }
       return group(
         [heading(section.title ?? "A clear point of view", 2, "center"), paragraph(section.text ?? "Use this section to set the frame with calm, readable copy.", { align: "center" })].join("\n"),
         { className: "blocksmith-intro", layout: { type: "constrained", contentSize: "760px" } }
@@ -62,11 +75,11 @@ export function renderSection(section: BlueprintSection, blueprint: Blueprint, c
     case "ctaBand":
       return group(
         [
-          heading(section.title ?? "Ready for the next step?", 2, "center"),
-          paragraph(section.text ?? "Keep the call to action direct, useful, and visually restrained.", { align: "center" }),
-          buttons(section.cta)
+          `<div class="blocksmith-cta-icon" aria-hidden="true"></div>`,
+          `<div class="blocksmith-cta-copy">${heading(section.title ?? "Good stories in your inbox.", 2)}${paragraph(section.text ?? "A weekly dispatch of local stories and behind-the-scenes notes.")}</div>`,
+          `<div class="blocksmith-cta-action">${buttons(section.cta)}</div>`
         ].join("\n"),
-        { align: "wide", className: "blocksmith-cta", layout: { type: "constrained" } }
+        { align: "full", className: "blocksmith-cta" }
       );
     case "postGrid":
       return postGrid(section);
@@ -231,7 +244,37 @@ ${[
     );
   }
 
-  return group(inner, { align: "wide", className: "blocksmith-hero", layout: { type: "constrained", contentSize: "860px" } });
+  const issueTitle = section.eyebrow ?? "Issue 01";
+  const issueBody = text.length > 134 ? `${text.slice(0, 131)}...` : text;
+  return group(
+    `<div class="blocksmith-hero-grid">
+  <div class="blocksmith-hero-copy">${inner}</div>
+  <div class="blocksmith-hero-art" aria-hidden="true"><span>Field guide</span></div>
+  <aside class="blocksmith-issue-note" aria-label="Issue highlights">
+    <p class="blocksmith-mini-label">${escapeHtml(issueTitle)}</p>
+    <h2>Inside this dispatch</h2>
+    <p>${escapeHtml(issueBody)}</p>
+    <ul>
+      <li>Place notes</li>
+      <li>People features</li>
+      <li>Small legends</li>
+    </ul>
+    <a href="#">View full issue -></a>
+  </aside>
+</div>`,
+    { align: "wide", className: "blocksmith-hero" }
+  );
+}
+
+function editorNote(section: BlueprintSection): string {
+  return group(
+    [
+      `<div class="blocksmith-note-mark" aria-hidden="true"></div>`,
+      `<div class="blocksmith-note-quote">${heading(section.title ?? "Editor's note", 2)}${paragraph(section.text ?? "A short editorial beat gives the page a humane pause before the final call to action.")}</div>`,
+      `<div class="blocksmith-note-aside"><p>This publication is a record of our region in real time.</p>${section.cta ? buttons(section.cta) : ""}</div>`
+    ].join("\n"),
+    { align: "full", className: "blocksmith-editor-note" }
+  );
 }
 
 function featureGrid(section: BlueprintSection): string {
@@ -241,8 +284,20 @@ function featureGrid(section: BlueprintSection): string {
     { title: "WordPress native", text: "Generated output stays editable in normal block themes." }
   ];
 
-  const columns = items.slice(0, 3).map((item) =>
-    column(group([heading(item.title, 3), paragraph(item.text ?? "")].join("\n"), { className: "blocksmith-card" }))
+  const kickers = ["Place notes", "People features", "Small legends"];
+  const links = ["Explore places ->", "Meet the people ->", "Read the legends ->"];
+  const columns = items.slice(0, 3).map((item, index) =>
+    column(
+      group(
+        [
+          `<span class="blocksmith-card-kicker">${escapeHtml(kickers[index] ?? "Feature")}</span>`,
+          heading(item.title, 3),
+          paragraph(item.text ?? ""),
+          `<a class="blocksmith-card-link" href="#">${escapeHtml(links[index] ?? "Read more ->")}</a>`
+        ].join("\n"),
+        { className: `blocksmith-card blocksmith-card-${index + 1}` }
+      )
+    )
   );
 
   return group(
@@ -285,13 +340,21 @@ function postGrid(section: BlueprintSection): string {
 
   return block(
     "query",
-    { query, displayLayout: { type: "flex", columns: Math.min(3, perPage) } },
+    { query, displayLayout: { type: "flex", columns: Math.min(5, perPage) } },
     [
-      section.title ? heading(section.title, 2) : "",
+      section.title ? `<div class="blocksmith-section-heading"><span aria-hidden="true">+</span>${heading(section.title, 2)}<a href="#">View all dispatches -></a></div>` : "",
       block(
         "post-template",
         {},
-        group([block("post-title", { isLink: true, level: 3 }), block("post-excerpt", { moreText: "Read more" }), block("post-date", { isLink: true })].join("\n"), { className: "blocksmith-post-card" })
+        group(
+          [
+            `<div class="blocksmith-post-card-media" aria-hidden="true"></div>`,
+            block("post-title", { isLink: true, level: 3 }),
+            block("post-excerpt", { moreText: "Read more" }),
+            block("post-date", { isLink: true })
+          ].join("\n"),
+          { className: "blocksmith-post-card" }
+        )
       ),
       block("query-pagination", { layout: { type: "flex", justifyContent: "space-between" } }, [block("query-pagination-previous"), block("query-pagination-numbers"), block("query-pagination-next")].join("\n"))
     ].filter(Boolean).join("\n")

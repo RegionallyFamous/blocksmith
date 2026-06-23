@@ -62,33 +62,36 @@ templates:
         ref: header
       - kind: hero
         variant: editorial
-        eyebrow: "Regionally Famous"
-        title: "Local stories with uncommon polish"
-        text: "A publication theme for places, people, shops, scenes, and small legends that deserve better than a generic blog."
+        eyebrow: "Dispatch"
+        title: "The morning belongs to the neighborhood."
+        text: "Coffee steam, bakery windows, and the first conversations of the day: notes from a slow walk through the old block."
         cta:
           label: "Read the dispatch"
           url: "#latest"
-      - kind: intro
-        title: "Built for a strong first read"
-        text: "The rhythm keeps the page warm and editorial: one unmistakable lead, a short mission beat, then a clear archive of recent pieces."
       - kind: featureGrid
-        title: "What it is tuned for"
         items:
-          - title: "Place notes"
-            text: "Neighborhood stories, venue profiles, and regional guides."
-          - title: "People features"
-            text: "Interviews and profiles that need calm, readable framing."
-          - title: "Small legends"
-            text: "A touch of character without losing WordPress-native restraint."
+          - title: "Corner stores still matter."
+            text: "Three blocks, two owners, countless small kindnesses."
+          - title: "The builders & the dreamers."
+            text: "Conversations with the people shaping our community."
+          - title: "Stories that stick around."
+            text: "Local lore, tall tales, and the truth in between."
       - kind: postGrid
         title: "Latest dispatches"
         query:
           perPage: 6
-      - kind: ctaBand
-        title: "Make the ordinary worth clipping"
-        text: "A quiet signoff that gives the publication a point of view without becoming a landing page."
+      - kind: intro
+        variant: editor-note
+        title: "We write about the places we love and the people who make them worth staying for."
+        text: "This publication is a record of our region in real time. Thank you for reading, sharing, and showing up for where you live."
         cta:
-          label: "Start reading"
-          url: "#latest"
+          label: "Learn more about us"
+          url: "#about"
+      - kind: ctaBand
+        title: "Good stories in your inbox."
+        text: "A weekly dispatch of local stories, recommendations, and behind-the-scenes notes from our editors."
+        cta:
+          label: "Subscribe"
+          url: "#subscribe"
       - kind: part
         ref: footer

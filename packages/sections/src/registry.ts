@@ -69,6 +69,17 @@ export const sectionRegistry: SectionVariantMetadata[] = [
     preferredProfiles: ["editorial-clean", "nonprofit-warm"]
   },
   {
+    kind: "intro",
+    variant: "editor-note",
+    idealUse: ["blog", "magazine"],
+    density: "medium",
+    visualWeight: "balanced",
+    allowedNext: ["ctaBand", "postGrid", "footer"],
+    mobileBehavior: "Quote, mark, and aside stack into a readable signoff.",
+    failureModes: ["Decorative pause without editorial substance", "Quote overwhelms the footer"],
+    preferredProfiles: ["editorial-clean", "magazine-dense"]
+  },
+  {
     kind: "featureGrid",
     variant: "three-up",
     idealUse: ["portfolio", "small-business", "nonprofit"],
@@ -125,4 +136,3 @@ export function defaultVariantFor(kind: SectionKind, profile: TasteProfile): str
   const exact = sectionRegistry.find((entry) => entry.kind === kind && entry.preferredProfiles.includes(profile));
   return exact?.variant ?? sectionRegistry.find((entry) => entry.kind === kind)?.variant;
 }
-

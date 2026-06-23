@@ -40,17 +40,18 @@ Taste findings should give concrete fixes:
 - Improve `base` and `contrast` token ratio.
 - Use section variants preferred by the active profile.
 
-## Imagegen-assisted taste loop
+## Imagegen-directed taste loop
 
-Blocksmith can use generated bitmap assets as taste material, not as vague decoration.
+Blocksmith can use generated bitmap comps as visual direction, not as vague decoration. A single nice masthead image is not enough; the useful artifact is a whole-page reference that shows hierarchy, rhythm, density, and footer/header strength.
 
 Recommended flow:
 
 1. Write the blueprint and choose a taste profile.
-2. Generate one art-directed hero or texture asset with Imagegen.
-3. Save the selected asset under the blueprint folder.
-4. Add it to `assets` with `role: hero`.
-5. Run `blocksmith preview` and capture a screenshot.
-6. Use the screenshot to revise composition, spacing, token contrast, or the image prompt.
+2. Generate a full-page layout/style comp with Imagegen for the intended site type.
+3. Save the selected comp under `docs/assets` as a visual reference.
+4. Extract deterministic rules from the comp: section order, headline scale, card density, accent placement, image treatment, footer weight, and mobile collapse behavior.
+5. Generate or supply individual frontend assets only after the whole-page direction is clear.
+6. Run `blocksmith preview` and capture a screenshot.
+7. Compare the screenshot against the comp and revise compiler rules, section variants, tokens, and blueprint content.
 
-The asset should reinforce the theme's editorial world while leaving readable space for real HTML text. Avoid image text, fake logos, brand marks, watermarks, and subject matter that would create licensing or trademark risk.
+The comp should describe the theme's editorial world while keeping final text, navigation, and content as real HTML. Avoid fake browser chrome, brand marks, watermarks, excessive decoration, and tiny unreadable UI text.
