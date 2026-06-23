@@ -28,6 +28,10 @@ npm run blocksmith -- taste examples/blog.blueprint.yaml
 npm test
 ```
 
+## Playground demos
+
+- [Regionally Famous Dispatch](https://playground.wordpress.net/?blueprint-url=https://raw.githubusercontent.com/RegionallyFamous/blocksmith/main/docs/playground/regionally-famous-dispatch.zip)
+
 ## WordPress tool integration
 
 Run static checks only:
