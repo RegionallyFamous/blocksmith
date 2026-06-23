@@ -1,0 +1,62 @@
+apiVersion: blocksmith.io/v0.1
+kind: BlockTheme
+target:
+  wordpress: ">=6.6"
+  themeJson: 3
+  php: ">=8.1"
+  blockProfile: core-stable
+metadata:
+  name: "Ledger Magazine"
+  slug: ledger-magazine
+  description: "A dense magazine theme with strong hierarchy and scannable archives."
+tasteProfile: magazine-dense
+tokens:
+  color:
+    base: "#fbfaf7"
+    contrast: "#101010"
+    primary: "#9e1f2f"
+    secondary: "#1e4962"
+    muted: "#ece8df"
+    surface: "#ffffff"
+    surfaceAlt: "#f1ede4"
+    border: "#cfc7b8"
+    link: "#8c1929"
+    buttonBg: "#101010"
+    buttonText: "#ffffff"
+    focus: "#1e4962"
+  typography:
+    bodyFont: "Inter, sans-serif"
+    headingFont: "Georgia, serif"
+  spacing:
+    md: "1.25rem"
+    lg: "2.5rem"
+    xl: "3.5rem"
+    xxl: "5rem"
+  layout:
+    contentSize: "760px"
+    wideSize: "1280px"
+templates:
+  index:
+    sections:
+      - kind: part
+        ref: header
+      - kind: hero
+        variant: editorial
+        title: "Reporting with pace and depth"
+        text: "A magazine structure that balances a strong lead story with dense, readable archives."
+        cta:
+          label: "Browse features"
+          url: "#features"
+      - kind: postGrid
+        title: "Featured stories"
+        query:
+          perPage: 9
+      - kind: ctaBand
+        title: "Stay close to the story"
+        text: "A restrained subscription prompt with enough contrast to be seen."
+        cta:
+          label: "Subscribe"
+          url: "#subscribe"
+      - kind: part
+        ref: footer
+

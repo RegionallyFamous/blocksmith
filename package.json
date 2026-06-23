@@ -1,0 +1,32 @@
+{
+  "name": "blocksmith-monorepo",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "tsc -b",
+    "clean": "rm -rf packages/*/dist .blocksmith dist coverage",
+    "test": "vitest run",
+    "typecheck": "tsc -b --pretty false",
+    "blocksmith": "tsx packages/cli/src/index.ts"
+  },
+  "dependencies": {
+    "@wordpress/block-serialization-default-parser": "latest",
+    "adm-zip": "latest",
+    "ajv": "latest",
+    "commander": "latest",
+    "playwright": "latest",
+    "yaml": "latest"
+  },
+  "devDependencies": {
+    "@types/adm-zip": "latest",
+    "@types/node": "latest",
+    "tsx": "latest",
+    "typescript": "latest",
+    "vitest": "latest"
+  }
+}
+

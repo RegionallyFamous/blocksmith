@@ -1,0 +1,12 @@
+{
+  "files": [],
+  "references": [
+    { "path": "packages/schema" },
+    { "path": "packages/sections" },
+    { "path": "packages/compiler" },
+    { "path": "packages/validator" },
+    { "path": "packages/taste" },
+    { "path": "packages/cli" }
+  ]
+}
+

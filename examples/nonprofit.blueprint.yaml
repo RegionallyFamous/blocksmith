@@ -1,0 +1,70 @@
+apiVersion: blocksmith.io/v0.1
+kind: BlockTheme
+target:
+  wordpress: ">=6.6"
+  themeJson: 3
+  php: ">=8.1"
+  blockProfile: core-stable
+metadata:
+  name: "Common Table"
+  slug: common-table
+  description: "A warm nonprofit theme for mission, programs, and action."
+tasteProfile: nonprofit-warm
+tokens:
+  color:
+    base: "#fffdf8"
+    contrast: "#1f1b16"
+    primary: "#87642f"
+    secondary: "#356b63"
+    muted: "#f2eadc"
+    surface: "#ffffff"
+    surfaceAlt: "#f7f0e3"
+    border: "#decfb8"
+    link: "#6d4f24"
+    buttonBg: "#356b63"
+    buttonText: "#ffffff"
+    focus: "#87642f"
+  typography:
+    bodyFont: "Inter, sans-serif"
+    headingFont: "Georgia, serif"
+  spacing:
+    md: "1.5rem"
+    lg: "3rem"
+    xl: "4.5rem"
+    xxl: "6rem"
+  layout:
+    contentSize: "760px"
+    wideSize: "1180px"
+templates:
+  index:
+    sections:
+      - kind: part
+        ref: header
+      - kind: hero
+        variant: editorial
+        title: "Make care easier to find"
+        text: "A mission-led layout with warmth, clarity, and direct paths to action."
+        cta:
+          label: "Support the work"
+          url: "#donate"
+      - kind: intro
+        title: "Programs people can understand"
+        text: "The page gives visitors a clear sense of who is helped, how it works, and what to do next."
+      - kind: featureGrid
+        title: "Ways we help"
+        items:
+          - title: "Community meals"
+            text: "Plain-language program cards for fast scanning."
+          - title: "Resource navigation"
+            text: "Helpful structure without institutional coldness."
+          - title: "Volunteer support"
+            text: "Clear action for people ready to contribute."
+      - kind: ctaBand
+        title: "Help keep the table open"
+        text: "A warm CTA with enough contrast and restraint to feel trustworthy."
+        cta:
+          label: "Donate"
+          url: "#donate"
+      - kind: part
+        ref: footer
+

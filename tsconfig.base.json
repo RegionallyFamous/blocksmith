@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "strict": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "esModuleInterop": true,
+    "types": ["node"],
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "ignoreDeprecations": "6.0",
+    "baseUrl": ".",
+    "paths": {
+      "@blocksmith/schema": ["packages/schema/src/index.ts"],
+      "@blocksmith/sections": ["packages/sections/src/index.ts"],
+      "@blocksmith/compiler": ["packages/compiler/src/index.ts"],
+      "@blocksmith/validator": ["packages/validator/src/index.ts"],
+      "@blocksmith/taste": ["packages/taste/src/index.ts"]
+    }
+  }
+}

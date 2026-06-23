@@ -1,0 +1,69 @@
+apiVersion: blocksmith.io/v0.1
+kind: BlockTheme
+target:
+  wordpress: ">=6.6"
+  themeJson: 3
+  php: ">=8.1"
+  blockProfile: core-stable
+metadata:
+  name: "Northstar Journal"
+  slug: northstar-journal
+  description: "A crisp editorial blog theme for essays, field notes, and durable writing."
+tasteProfile: editorial-clean
+policy:
+  profile: wporg-block-theme-v1
+  allowRawCode: false
+  allowRemoteAssets: false
+tokens:
+  color:
+    base: "#ffffff"
+    contrast: "#111111"
+    primary: "#2457c5"
+    muted: "#f2f0ea"
+    surface: "#ffffff"
+    surfaceAlt: "#f7f7f4"
+    border: "#d8d6cf"
+    link: "#1f4faf"
+    buttonBg: "#111111"
+    buttonText: "#ffffff"
+    focus: "#2457c5"
+  typography:
+    bodyFont: "Inter, sans-serif"
+    headingFont: "Georgia, serif"
+    scale:
+      base: "1rem"
+      large: "2rem"
+      xlarge: "3.25rem"
+  spacing:
+    xs: "0.5rem"
+    sm: "1rem"
+    md: "1.5rem"
+    lg: "3rem"
+    xl: "4.5rem"
+    xxl: "6rem"
+  layout:
+    contentSize: "720px"
+    wideSize: "1180px"
+templates:
+  index:
+    sections:
+      - kind: part
+        ref: header
+      - kind: hero
+        variant: editorial
+        title: "Essays with a clear signal"
+        eyebrow: "Northstar Journal"
+        text: "A measured writing theme with generous whitespace, confident type, and a quiet archive rhythm."
+        cta:
+          label: "Read latest"
+          url: "#latest"
+      - kind: intro
+        title: "Built for careful publishing"
+        text: "Use this theme when the writing needs to feel edited, legible, and calm."
+      - kind: postGrid
+        title: "Latest writing"
+        query:
+          perPage: 6
+      - kind: part
+        ref: footer
+

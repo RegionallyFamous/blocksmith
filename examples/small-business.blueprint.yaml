@@ -1,0 +1,67 @@
+apiVersion: blocksmith.io/v0.1
+kind: BlockTheme
+target:
+  wordpress: ">=6.6"
+  themeJson: 3
+  php: ">=8.1"
+  blockProfile: core-stable
+metadata:
+  name: "Harbor Services"
+  slug: harbor-services
+  description: "A trustworthy small-business theme for service pages and local credibility."
+tasteProfile: small-business-trustworthy
+tokens:
+  color:
+    base: "#ffffff"
+    contrast: "#15201d"
+    primary: "#27695a"
+    secondary: "#b78d3b"
+    muted: "#eef3ef"
+    surface: "#ffffff"
+    surfaceAlt: "#f5f8f5"
+    border: "#cfdbd5"
+    link: "#1f5a4d"
+    buttonBg: "#27695a"
+    buttonText: "#ffffff"
+    focus: "#b78d3b"
+  typography:
+    bodyFont: "Inter, sans-serif"
+    headingFont: "Georgia, serif"
+  spacing:
+    md: "1.25rem"
+    lg: "2.75rem"
+    xl: "4rem"
+    xxl: "5.5rem"
+  layout:
+    contentSize: "760px"
+    wideSize: "1160px"
+templates:
+  index:
+    sections:
+      - kind: part
+        ref: header
+      - kind: hero
+        variant: split-media
+        title: "Reliable help, clearly explained"
+        text: "A calm service-business layout with strong calls to action and no visual noise."
+        cta:
+          label: "Request a quote"
+          url: "#contact"
+      - kind: featureGrid
+        title: "Why clients call us"
+        items:
+          - title: "Fast response"
+            text: "Clear next steps and predictable communication."
+          - title: "Experienced team"
+            text: "A practical layout for trust-building proof."
+          - title: "Local service"
+            text: "Structured content for people ready to act."
+      - kind: ctaBand
+        title: "Book a consultation"
+        text: "Make the next step easy without turning the page into a sales flyer."
+        cta:
+          label: "Get started"
+          url: "#contact"
+      - kind: part
+        ref: footer
+

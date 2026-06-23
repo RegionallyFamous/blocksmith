@@ -1,0 +1,73 @@
+# Blocksmith
+
+Blocksmith is a compiler and validation harness for LLM-authored WordPress block theme blueprints.
+
+The goal is not to replace WordPress theming. The goal is to let AI tools and humans describe theme intent in a constrained format, then compile that intent into ordinary WordPress block-theme files with validation evidence and taste critique.
+
+## Current status
+
+This repo is an implementation spine:
+
+- TypeScript workspaces.
+- Block Theme Blueprint schema and types.
+- Deterministic compiler for core-block-only block themes.
+- Static validation for schema, required files, theme JSON, block markup parsing, and remote URL scans.
+- Taste profiles and taste reports.
+- CLI commands: `init`, `build`, `validate`, `verify`, `preview`, `package`, `taste`.
+- Optional Theme Check and Create Block Theme integration for real WordPress installs and Playground preview scaffolds.
+- Five golden example blueprints.
+
+## Quick start
+
+```bash
+npm install
+npm run build
+npm run blocksmith -- validate examples/blog.blueprint.yaml
+npm run blocksmith -- build examples/blog.blueprint.yaml --out dist/blog-theme
+npm run blocksmith -- taste examples/blog.blueprint.yaml
+npm test
+```
+
+## WordPress tool integration
+
+Run static checks only:
+
+```bash
+npm run blocksmith -- verify examples/blog.blueprint.yaml
+```
+
+Run against a local WordPress install with Theme Check and Create Block Theme:
+
+```bash
+npm run blocksmith -- verify examples/blog.blueprint.yaml --wp-path /path/to/wordpress
+```
+
+That command copies the generated theme into `wp-content/themes`, installs and activates `theme-check` and `create-block-theme`, activates the generated theme, runs `wp theme-check run <theme> --format=json`, and records the output in `validation-report.json`.
+
+Generate a Playground scaffold with both plugins installed:
+
+```bash
+npm run blocksmith -- preview examples/blog.blueprint.yaml --with-wp-tools
+```
+
+## Why taste is first-class
+
+Valid files are not enough. LLM-generated themes fail visually through weak hierarchy, bland rhythm, awkward spacing, repeated sections, unreadable contrast, or generic composition. Blocksmith treats taste as explicit policy:
+
+- A blueprint declares a `tasteProfile`.
+- Section variants carry taste metadata.
+- The compiler uses deterministic defaults based on the profile.
+- `blocksmith taste` emits scores, critique, and repair suggestions.
+- `blocksmith verify` writes `taste-report.json` beside `validation-report.json`.
+
+## V1 constraints
+
+- Block themes only.
+- Core blocks only.
+- No arbitrary PHP or JavaScript.
+- No custom blocks.
+- No WooCommerce.
+- No remote asset fetching during compile.
+- No accessibility-ready or WCAG claim without human review.
+
+See `docs/architecture.md`, `docs/spec.md`, `docs/taste-guide.md`, and `docs/llm-integration.md`.

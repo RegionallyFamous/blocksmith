@@ -1,0 +1,22 @@
+{
+  "name": "@blocksmith/validator",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "dependencies": {
+    "@blocksmith/schema": "0.1.0",
+    "@wordpress/block-serialization-default-parser": "latest",
+    "ajv": "latest"
+  },
+  "scripts": {
+    "build": "tsc -b"
+  }
+}
+

@@ -1,0 +1,29 @@
+{
+  "name": "@blocksmith/cli",
+  "version": "0.1.0",
+  "type": "module",
+  "bin": {
+    "blocksmith": "dist/index.js"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "dependencies": {
+    "@blocksmith/compiler": "0.1.0",
+    "@blocksmith/schema": "0.1.0",
+    "@blocksmith/taste": "0.1.0",
+    "@blocksmith/validator": "0.1.0",
+    "adm-zip": "latest",
+    "commander": "latest",
+    "yaml": "latest"
+  },
+  "scripts": {
+    "build": "tsc -b"
+  }
+}
+

@@ -1,0 +1,64 @@
+apiVersion: blocksmith.io/v0.1
+kind: BlockTheme
+target:
+  wordpress: ">=6.6"
+  themeJson: 3
+  php: ">=8.1"
+  blockProfile: core-stable
+metadata:
+  name: "Signal Portfolio"
+  slug: signal-portfolio
+  description: "A bold portfolio theme for case studies and creative work."
+tasteProfile: portfolio-bold
+tokens:
+  color:
+    base: "#fbfbf6"
+    contrast: "#121212"
+    primary: "#d24b2a"
+    secondary: "#204c5a"
+    muted: "#ebe7dc"
+    surface: "#ffffff"
+    surfaceAlt: "#f0ece1"
+    border: "#242424"
+    link: "#a73720"
+    buttonBg: "#d24b2a"
+    buttonText: "#ffffff"
+    focus: "#204c5a"
+  typography:
+    bodyFont: "Inter, sans-serif"
+    headingFont: "Arial Black, Arial, sans-serif"
+  spacing:
+    md: "1.5rem"
+    lg: "3rem"
+    xl: "5rem"
+    xxl: "7rem"
+  layout:
+    contentSize: "760px"
+    wideSize: "1240px"
+templates:
+  index:
+    sections:
+      - kind: part
+        ref: header
+      - kind: hero
+        variant: split-media
+        title: "Work with a sharper edge"
+        text: "A portfolio frame that makes case studies feel direct, visual, and deliberate."
+        cta:
+          label: "View work"
+          url: "#work"
+      - kind: featureGrid
+        title: "Selected capabilities"
+        items:
+          - title: "Identity"
+            text: "Clear systems with memorable signatures."
+          - title: "Editorial"
+            text: "Story-led pages that guide attention."
+          - title: "Launch"
+            text: "Tight presentation for public release."
+      - kind: mediaText
+        title: "Case studies without clutter"
+        text: "The layout makes images prominent without losing written context."
+      - kind: part
+        ref: footer
+

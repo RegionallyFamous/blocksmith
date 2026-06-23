@@ -1,0 +1,35 @@
+apiVersion: blocksmith.io/v0.1
+kind: BlockTheme
+target:
+  wordpress: ">=6.6"
+  themeJson: 3
+  php: ">=8.1"
+  blockProfile: core-stable
+metadata:
+  name: "Ugly Repeater"
+  slug: ugly-repeater
+tasteProfile: editorial-clean
+tokens:
+  color:
+    base: "#ffffff"
+    contrast: "#eeeeee"
+    primary: "#dddddd"
+    buttonBg: "#ffffff"
+    buttonText: "#eeeeee"
+  typography:
+    bodyFont: "Arial, sans-serif"
+    headingFont: "Arial, sans-serif"
+  spacing:
+    md: "1rem"
+    lg: "2rem"
+  layout:
+    contentSize: "960px"
+    wideSize: "1100px"
+templates:
+  index:
+    sections:
+      - kind: featureGrid
+      - kind: featureGrid
+      - kind: featureGrid
+      - kind: postGrid
+

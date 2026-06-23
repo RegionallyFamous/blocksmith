@@ -1,0 +1,88 @@
+apiVersion: blocksmith.io/v0.1
+kind: BlockTheme
+target:
+  wordpress: ">=6.6"
+  themeJson: 3
+  php: ">=8.1"
+  blockProfile: core-stable
+metadata:
+  name: "Regionally Famous Dispatch"
+  slug: regionally-famous-dispatch
+  description: "A warm, sharp local-publication theme for neighborhood stories, cultural notes, and small-but-beloved places."
+tasteProfile: editorial-clean
+policy:
+  profile: wporg-block-theme-v1
+  allowRawCode: false
+  allowRemoteAssets: false
+tokens:
+  color:
+    base: "#fffdf7"
+    contrast: "#17130f"
+    primary: "#b63f2d"
+    secondary: "#245f68"
+    muted: "#f1e6d2"
+    surface: "#ffffff"
+    surfaceAlt: "#f7eedf"
+    border: "#dcc9aa"
+    link: "#8e2f22"
+    buttonBg: "#17130f"
+    buttonText: "#fffdf7"
+    focus: "#245f68"
+  typography:
+    bodyFont: "Inter, sans-serif"
+    headingFont: "Georgia, serif"
+    scale:
+      small: "0.875rem"
+      base: "1rem"
+      medium: "1.25rem"
+      large: "2.25rem"
+      xlarge: "3.5rem"
+      huge: "4.75rem"
+  spacing:
+    xs: "0.5rem"
+    sm: "1rem"
+    md: "1.5rem"
+    lg: "3rem"
+    xl: "4.5rem"
+    xxl: "6.5rem"
+  layout:
+    contentSize: "740px"
+    wideSize: "1200px"
+templates:
+  index:
+    sections:
+      - kind: part
+        ref: header
+      - kind: hero
+        variant: editorial
+        eyebrow: "Regionally Famous"
+        title: "Local stories with uncommon polish"
+        text: "A publication theme for places, people, shops, scenes, and small legends that deserve better than a generic blog."
+        cta:
+          label: "Read the dispatch"
+          url: "#latest"
+      - kind: intro
+        title: "Built for a strong first read"
+        text: "The rhythm keeps the page warm and editorial: one unmistakable lead, a short mission beat, then a clear archive of recent pieces."
+      - kind: featureGrid
+        title: "What it is tuned for"
+        items:
+          - title: "Place notes"
+            text: "Neighborhood stories, venue profiles, and regional guides."
+          - title: "People features"
+            text: "Interviews and profiles that need calm, readable framing."
+          - title: "Small legends"
+            text: "A touch of character without losing WordPress-native restraint."
+      - kind: postGrid
+        title: "Latest dispatches"
+        query:
+          perPage: 6
+      - kind: ctaBand
+        title: "Make the ordinary worth clipping"
+        text: "A quiet signoff that gives the publication a point of view without becoming a landing page."
+        cta:
+          label: "Start reading"
+          url: "#latest"
+      - kind: part
+        ref: footer
+
