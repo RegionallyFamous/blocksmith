@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 import { Command } from "commander";
 import { parse as parseYaml } from "yaml";
-import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
-import { dirname, extname, join } from "node:path";
+import { copyFile, mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { dirname, extname, isAbsolute, join, resolve } from "node:path";
 import { tmpdir } from "node:os";
 import AdmZip from "adm-zip";
 import { API_VERSION, BLUEPRINT_KIND, type Blueprint } from "@blocksmith/schema";
@@ -46,6 +46,7 @@ program
     const blueprint = await loadBlueprint(blueprintPath);
     const result = compileBlueprint(blueprint);
     await writeFiles(options.out, result.files);
+    await copyAssets(blueprint, blueprintPath, options.out);
     console.log(`Built ${result.themeSlug} into ${options.out}`);
   });
 
@@ -94,6 +95,7 @@ program
     const themeDir = join(options.out, "theme");
     await rm(options.out, { recursive: true, force: true });
     await writeFiles(themeDir, compileResult.files);
+    await copyAssets(blueprint, blueprintPath, themeDir);
 
     const validation = mergeReports(validateBlueprint(blueprint), validateThemeOutput(compileResult.files, blueprint));
     const taste = analyzeTaste(blueprint);
@@ -143,6 +145,7 @@ program
     const themeDir = join(options.out, "theme");
     await rm(options.out, { recursive: true, force: true });
     await writeFiles(themeDir, compileResult.files);
+    await copyAssets(blueprint, blueprintPath, themeDir);
     const zipPath = join(options.out, "theme.zip");
     zipDirectory(themeDir, zipPath, compileResult.themeSlug);
     const playgroundBlueprint = options.withWpTools
@@ -162,6 +165,7 @@ program
     const compileResult = compileBlueprint(blueprint);
     const temp = join(tmpdir(), `blocksmith-${compileResult.themeSlug}-${Date.now()}`);
     await writeFiles(temp, compileResult.files);
+    await copyAssets(blueprint, blueprintPath, temp);
     const out = options.out ?? `dist/${compileResult.themeSlug}.zip`;
     await mkdir(dirname(out), { recursive: true });
     zipDirectory(temp, out, compileResult.themeSlug);
@@ -185,6 +189,20 @@ async function writeFiles(root: string, files: Record<string, string>) {
     const path = join(root, relative);
     await mkdir(dirname(path), { recursive: true });
     await writeFile(path, content, "utf8");
+  }
+}
+
+async function copyAssets(blueprint: Blueprint, blueprintPath: string, themeRoot: string) {
+  const blueprintDir = dirname(resolve(blueprintPath));
+  for (const asset of blueprint.assets ?? []) {
+    if (/^https?:\/\//.test(asset.source)) {
+      throw new Error(`Remote asset sources are not supported by the v1 compiler: ${asset.source}`);
+    }
+
+    const source = isAbsolute(asset.source) ? asset.source : resolve(blueprintDir, asset.source);
+    const target = join(themeRoot, asset.path);
+    await mkdir(dirname(target), { recursive: true });
+    await copyFile(source, target);
   }
 }
 

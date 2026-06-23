@@ -215,6 +215,7 @@ export const blueprintSchema = {
           path: { type: "string" },
           source: { type: "string" },
           license: { type: "string" },
+          role: { enum: ["hero", "texture", "content", "reference"] },
           author: { type: "string" },
           copyright: { type: "string" },
           generated: { type: "boolean" }
@@ -250,4 +251,3 @@ export const blueprintSchema = {
     }
   }
 } as const;
-

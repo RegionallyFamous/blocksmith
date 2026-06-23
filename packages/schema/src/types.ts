@@ -116,6 +116,7 @@ export interface BlueprintAsset {
   path: string;
   source: string;
   license: string;
+  role?: "hero" | "texture" | "content" | "reference";
   author?: string;
   copyright?: string;
   generated?: boolean;
@@ -198,4 +199,3 @@ export interface Diagnostic {
     value?: unknown;
   }>;
 }
-

@@ -250,6 +250,15 @@ See resources.json for bundled asset provenance.
 
 function renderBaseCss(blueprint: Blueprint): string {
   const tokens = blueprint.tokens;
+  const heroAsset = (blueprint.assets ?? []).find((asset) => asset.role === "hero");
+  const heroBackground = heroAsset
+    ? `background-color: var(--wp--preset--color--muted, ${tokens.color.muted ?? "#f4f4f4"});
+  background-image:
+    linear-gradient(90deg, rgba(241, 230, 210, 0.97) 0%, rgba(241, 230, 210, 0.92) 42%, rgba(241, 230, 210, 0.16) 100%),
+    url("${cssAssetUrl(heroAsset.path)}");
+  background-position: center;
+  background-size: cover;`
+    : `background: var(--wp--preset--color--muted, ${tokens.color.muted ?? "#f4f4f4"});`;
   return `body {
   background:
     linear-gradient(90deg, rgba(182, 63, 45, 0.06) 0 1px, transparent 1px 100%),
@@ -273,7 +282,7 @@ function renderBaseCss(blueprint: Blueprint): string {
 }
 
 .blocksmith-hero {
-  background: var(--wp--preset--color--muted, ${tokens.color.muted ?? "#f4f4f4"});
+  ${heroBackground}
   border: 1px solid var(--wp--preset--color--border, ${tokens.color.border ?? "#dddddd"});
   border-radius: ${tokens.radius?.lg ?? "8px"};
   box-shadow: ${tokens.shadow?.sm ?? "0 18px 50px rgba(0, 0, 0, 0.06)"};
@@ -284,6 +293,10 @@ function renderBaseCss(blueprint: Blueprint): string {
   padding-bottom: var(--wp--preset--spacing--xxl, 6rem);
   padding-left: clamp(1.5rem, 5vw, 5rem);
   padding-right: clamp(1.5rem, 5vw, 5rem);
+}
+
+.blocksmith-hero .wp-block-buttons {
+  margin-top: var(--wp--preset--spacing--md);
 }
 
 .blocksmith-hero h1 {
@@ -400,6 +413,13 @@ function renderBaseCss(blueprint: Blueprint): string {
   }
 }
 `;
+}
+
+function cssAssetUrl(themePath: string): string {
+  if (themePath.startsWith("assets/")) {
+    return `../${themePath.slice("assets/".length)}`;
+  }
+  return themePath;
 }
 
 function renderPlaygroundBlueprint(themeSlug: string, siteTitle: string): string {

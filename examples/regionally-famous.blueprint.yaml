@@ -14,6 +14,13 @@ policy:
   profile: wporg-block-theme-v1
   allowRawCode: false
   allowRemoteAssets: false
+assets:
+  - path: assets/images/regionally-famous-masthead.jpg
+    source: assets/regionally-famous-masthead.jpg
+    role: hero
+    license: AI-generated; human review required before public release
+    author: OpenAI Imagegen
+    generated: true
 tokens:
   color:
     base: "#fffdf7"
@@ -85,4 +92,3 @@ templates:
           url: "#latest"
       - kind: part
         ref: footer
-

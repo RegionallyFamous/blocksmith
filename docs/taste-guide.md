@@ -40,3 +40,17 @@ Taste findings should give concrete fixes:
 - Improve `base` and `contrast` token ratio.
 - Use section variants preferred by the active profile.
 
+## Imagegen-assisted taste loop
+
+Blocksmith can use generated bitmap assets as taste material, not as vague decoration.
+
+Recommended flow:
+
+1. Write the blueprint and choose a taste profile.
+2. Generate one art-directed hero or texture asset with Imagegen.
+3. Save the selected asset under the blueprint folder.
+4. Add it to `assets` with `role: hero`.
+5. Run `blocksmith preview` and capture a screenshot.
+6. Use the screenshot to revise composition, spacing, token contrast, or the image prompt.
+
+The asset should reinforce the theme's editorial world while leaving readable space for real HTML text. Avoid image text, fake logos, brand marks, watermarks, and subject matter that would create licensing or trademark risk.
