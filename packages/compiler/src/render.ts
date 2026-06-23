@@ -35,16 +35,16 @@ export function renderSection(section: BlueprintSection, blueprint: Blueprint, c
     case "header":
       return group(
         [
-          block("site-title", { level: 0 }),
-          block("navigation", { overlayMenu: "mobile" })
+          `<div class="blocksmith-site-brand">${block("site-title", { level: 0 })}</div>`,
+          `<div class="blocksmith-site-nav">${block("navigation", { overlayMenu: "mobile" })}</div>`
         ].join("\n"),
         { align: "full", className: "blocksmith-header", layout: { type: "flex", justifyContent: "space-between", flexWrap: "wrap" } }
       );
     case "footer":
       return group(
         [
-          block("site-title", { level: 0 }),
-          paragraph(section.text ?? "Built with WordPress.", { align: "right" })
+          `<div>${block("site-title", { level: 0 })}</div>`,
+          `<div>${paragraph(section.text ?? "Built with WordPress.", { align: "right" })}</div>`
         ].join("\n"),
         { align: "full", className: "blocksmith-footer", layout: { type: "flex", justifyContent: "space-between", flexWrap: "wrap" } }
       );
@@ -81,7 +81,7 @@ export function renderSection(section: BlueprintSection, blueprint: Blueprint, c
     case "comments":
       return block("comments");
     case "pagination":
-      return block("query-pagination", { layout: { type: "flex", justifyContent: "space-between" } }, [block("query-pagination-previous"), block("query-pagination-numbers"), block("query-pagination-next")].join("\n"));
+      return block("query-pagination", { layout: { type: "flex", justifyContent: "space-between" } }, `<div class="wp-block-query-pagination">${[block("query-pagination-previous"), block("query-pagination-numbers"), block("query-pagination-next")].join("\n")}</div>`);
     case "searchResults":
       return postGrid({ ...section, kind: "postGrid", title: section.title ?? "Search results" });
     case "notFound":
@@ -222,10 +222,12 @@ function hero(section: BlueprintSection, variant?: string): string {
     return block(
       "media-text",
       { align: "wide", mediaPosition: "right", mediaType: "image", verticalAlignment: "center" },
-      [
+      `<div class="wp-block-media-text alignwide is-stacked-on-mobile is-vertically-aligned-center has-media-on-the-right">
+${[
         `<figure class="wp-block-media-text__media"></figure>`,
         `<div class="wp-block-media-text__content">${inner}</div>`
-      ].join("\n")
+      ].join("\n")}
+</div>`
     );
   }
 
@@ -240,13 +242,13 @@ function featureGrid(section: BlueprintSection): string {
   ];
 
   const columns = items.slice(0, 3).map((item) =>
-    block("column", {}, group([heading(item.title, 3), paragraph(item.text ?? "")].join("\n"), { className: "blocksmith-card" }))
+    column(group([heading(item.title, 3), paragraph(item.text ?? "")].join("\n"), { className: "blocksmith-card" }))
   );
 
   return group(
     [
       section.title ? heading(section.title, 2, "center") : "",
-      block("columns", { align: "wide" }, columns.join("\n"))
+      columnsBlock(columns.join("\n"), "wide")
     ].filter(Boolean).join("\n"),
     { className: "blocksmith-feature-grid" }
   );
@@ -256,10 +258,12 @@ function mediaText(section: BlueprintSection): string {
   return block(
     "media-text",
     { align: "wide", mediaPosition: "left", mediaType: "image", verticalAlignment: "center" },
-    [
+    `<div class="wp-block-media-text alignwide is-stacked-on-mobile is-vertically-aligned-center">
+${[
       `<figure class="wp-block-media-text__media"></figure>`,
       `<div class="wp-block-media-text__content">${heading(section.title ?? "Designed for real publishing", 2)}${paragraph(section.text ?? "A balanced media section gives the page a change in pace without overwhelming the content.")}${section.cta ? buttons(section.cta) : ""}</div>`
-    ].join("\n")
+    ].join("\n")}
+</div>`
   );
 }
 
@@ -315,7 +319,8 @@ function fontSizes(tokens: BlueprintTokens) {
 }
 
 function paragraph(text: string, attrs: Record<string, unknown> = {}): string {
-  return block("paragraph", attrs, `<p>${escapeHtml(text)}</p>`);
+  const className = typeof attrs.className === "string" ? ` class="${escapeHtml(attrs.className)}"` : "";
+  return block("paragraph", attrs, `<p${className}>${escapeHtml(text)}</p>`);
 }
 
 function heading(text: string, level: number, align?: "center" | "right" | "left"): string {
@@ -331,12 +336,33 @@ function buttons(cta?: { label: string; url: string }): string {
   return block(
     "buttons",
     {},
-    block("button", {}, `<div class="wp-block-button"><a class="wp-block-button__link wp-element-button" href="${escapeHtml(cta.url)}">${escapeHtml(cta.label)}</a></div>`)
+    `<div class="wp-block-buttons">${block("button", {}, `<div class="wp-block-button"><a class="wp-block-button__link wp-element-button" href="${escapeHtml(cta.url)}">${escapeHtml(cta.label)}</a></div>`)}</div>`
   );
 }
 
 function group(inner: string, attrs: Record<string, unknown> = {}): string {
-  return block("group", attrs, `<div class="wp-block-group">\n${inner}\n</div>`);
+  return block("group", attrs, `<div class="${blockClasses("wp-block-group", attrs)}">\n${inner}\n</div>`);
+}
+
+function column(inner: string): string {
+  return block("column", {}, `<div class="wp-block-column">\n${inner}\n</div>`);
+}
+
+function columnsBlock(inner: string, align?: "wide" | "full"): string {
+  const attrs = align ? { align } : {};
+  const alignClass = align ? ` align${align}` : "";
+  return block("columns", attrs, `<div class="wp-block-columns${alignClass}">\n${inner}\n</div>`);
+}
+
+function blockClasses(base: string, attrs: Record<string, unknown>): string {
+  const classes = [base];
+  if (attrs.align === "wide" || attrs.align === "full") {
+    classes.push(`align${attrs.align}`);
+  }
+  if (typeof attrs.className === "string") {
+    classes.push(attrs.className);
+  }
+  return classes.map(escapeHtml).join(" ");
 }
 
 function block(name: string, attrs: Record<string, unknown> = {}, inner?: string): string {
@@ -347,4 +373,3 @@ function block(name: string, attrs: Record<string, unknown> = {}, inner?: string
 
   return `<!-- wp:${name}${attrsText} -->\n${inner}\n<!-- /wp:${name} -->`;
 }
-

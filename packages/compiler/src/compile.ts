@@ -17,6 +17,7 @@ export function compileBlueprint(input: Blueprint): CompileResult {
   const files: Record<string, string> = {};
 
   files["style.css"] = renderStyleCss(blueprint, textDomain);
+  files["functions.php"] = renderFunctionsPhp(themeSlug);
   files["readme.txt"] = renderReadme(blueprint);
   files["theme.json"] = renderThemeJson(blueprint);
   files["resources.json"] = stableJson({
@@ -74,7 +75,7 @@ export function compileBlueprint(input: Blueprint): CompileResult {
   }
 
   files["assets/css/blocksmith.css"] = renderBaseCss(blueprint);
-  files["playground/blueprint.json"] = renderPlaygroundBlueprint(themeSlug);
+  files["playground/blueprint.json"] = renderPlaygroundBlueprint(themeSlug, blueprint.metadata.name);
 
   return { files, diagnostics, themeSlug };
 }
@@ -202,8 +203,27 @@ Requires PHP: ${blueprint.metadata.requiresPhp ?? blueprint.target.php.replace(/
 License: ${blueprint.metadata.license ?? "GPL-2.0-or-later"}
 Text Domain: ${textDomain}
 */
+`;
+}
 
-@import url("./assets/css/blocksmith.css");
+function renderFunctionsPhp(themeSlug: string): string {
+  const handle = `${themeSlug}-blocksmith`;
+  return `<?php
+/**
+ * Theme setup for generated Blocksmith styles.
+ */
+
+add_action(
+\t'wp_enqueue_scripts',
+\tstatic function (): void {
+\t\twp_enqueue_style(
+\t\t\t'${handle}',
+\t\t\tget_theme_file_uri( 'assets/css/blocksmith.css' ),
+\t\t\tarray(),
+\t\t\twp_get_theme()->get( 'Version' )
+\t\t);
+\t}
+);
 `;
 }
 
@@ -230,22 +250,86 @@ See resources.json for bundled asset provenance.
 
 function renderBaseCss(blueprint: Blueprint): string {
   const tokens = blueprint.tokens;
-  return `.blocksmith-header,
+  return `body {
+  background:
+    linear-gradient(90deg, rgba(182, 63, 45, 0.06) 0 1px, transparent 1px 100%),
+    var(--wp--preset--color--base, ${tokens.color.base});
+  background-size: 88px 88px;
+}
+
+.wp-site-blocks {
+  padding-left: clamp(1rem, 4vw, 4rem);
+  padding-right: clamp(1rem, 4vw, 4rem);
+}
+
+.blocksmith-header,
 .blocksmith-footer {
+  align-items: center;
+  border-bottom: 1px solid var(--wp--preset--color--border, ${tokens.color.border ?? "#dddddd"});
+  display: flex;
+  justify-content: space-between;
   padding-top: var(--wp--preset--spacing--md);
   padding-bottom: var(--wp--preset--spacing--md);
 }
 
 .blocksmith-hero {
+  background: var(--wp--preset--color--muted, ${tokens.color.muted ?? "#f4f4f4"});
+  border: 1px solid var(--wp--preset--color--border, ${tokens.color.border ?? "#dddddd"});
+  border-radius: ${tokens.radius?.lg ?? "8px"};
+  box-shadow: ${tokens.shadow?.sm ?? "0 18px 50px rgba(0, 0, 0, 0.06)"};
+  margin-top: var(--wp--preset--spacing--lg);
+  margin-bottom: var(--wp--preset--spacing--lg);
+  max-width: var(--wp--style--global--wide-size, ${tokens.layout.wideSize});
   padding-top: var(--wp--preset--spacing--xxl, 6rem);
   padding-bottom: var(--wp--preset--spacing--xxl, 6rem);
+  padding-left: clamp(1.5rem, 5vw, 5rem);
+  padding-right: clamp(1.5rem, 5vw, 5rem);
+}
+
+.blocksmith-hero h1 {
+  font-size: clamp(3rem, 7vw, 6.5rem);
+  letter-spacing: 0;
+  max-width: 11ch;
+}
+
+.blocksmith-hero p:not(.blocksmith-eyebrow) {
+  font-size: clamp(1.125rem, 2vw, 1.5rem);
+  max-width: 46rem;
+}
+
+.blocksmith-intro {
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 780px;
+  padding-bottom: var(--wp--preset--spacing--lg);
+  padding-top: var(--wp--preset--spacing--lg);
+}
+
+.blocksmith-feature-grid {
+  margin-left: auto;
+  margin-right: auto;
+  max-width: var(--wp--style--global--wide-size, ${tokens.layout.wideSize});
+  padding-bottom: var(--wp--preset--spacing--lg);
+  padding-top: var(--wp--preset--spacing--lg);
+}
+
+.blocksmith-feature-grid .wp-block-columns {
+  display: grid;
+  gap: var(--wp--preset--spacing--md);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .blocksmith-card,
 .blocksmith-post-card {
+  background: var(--wp--preset--color--surface, ${tokens.color.surface ?? "#ffffff"});
   border: 1px solid var(--wp--preset--color--border, ${tokens.color.border ?? "#dddddd"});
   border-radius: ${tokens.radius?.md ?? "6px"};
+  min-height: 100%;
   padding: var(--wp--preset--spacing--md);
+}
+
+.blocksmith-card h3 {
+  margin-top: 0;
 }
 
 .blocksmith-eyebrow {
@@ -256,10 +340,39 @@ function renderBaseCss(blueprint: Blueprint): string {
 }
 
 .blocksmith-cta {
+  background: var(--wp--preset--color--surface-alt, ${tokens.color.surfaceAlt ?? "#f7f7f7"});
   border-top: 1px solid var(--wp--preset--color--border, ${tokens.color.border ?? "#dddddd"});
   border-bottom: 1px solid var(--wp--preset--color--border, ${tokens.color.border ?? "#dddddd"});
+  margin-bottom: var(--wp--preset--spacing--lg);
+  margin-top: var(--wp--preset--spacing--lg);
   padding-top: var(--wp--preset--spacing--xl, 4rem);
   padding-bottom: var(--wp--preset--spacing--xl, 4rem);
+  text-align: center;
+}
+
+.wp-block-button__link,
+.wp-element-button {
+  background: var(--wp--preset--color--button-bg, ${tokens.color.buttonBg ?? tokens.color.primary});
+  border-radius: ${tokens.radius?.sm ?? "999px"};
+  color: var(--wp--preset--color--button-text, ${tokens.color.buttonText ?? "#ffffff"});
+  display: inline-block;
+  font-weight: 800;
+  padding: 0.85rem 1.25rem;
+  text-decoration: none;
+}
+
+.wp-block-query {
+  margin-left: auto;
+  margin-right: auto;
+  max-width: var(--wp--style--global--wide-size, ${tokens.layout.wideSize});
+}
+
+.wp-block-post-template {
+  display: grid;
+  gap: var(--wp--preset--spacing--md);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  list-style: none;
+  padding-left: 0;
 }
 
 :where(a:focus-visible, button:focus-visible, .wp-element-button:focus-visible) {
@@ -272,10 +385,24 @@ function renderBaseCss(blueprint: Blueprint): string {
     scroll-behavior: auto !important;
   }
 }
+
+@media (max-width: 760px) {
+  .blocksmith-feature-grid .wp-block-columns,
+  .wp-block-post-template {
+    grid-template-columns: 1fr;
+  }
+
+  .blocksmith-header,
+  .blocksmith-footer {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+}
 `;
 }
 
-function renderPlaygroundBlueprint(themeSlug: string): string {
+function renderPlaygroundBlueprint(themeSlug: string, siteTitle: string): string {
   return stableJson({
     $schema: "https://playground.wordpress.net/blueprint-schema.json",
     landingPage: "/",
@@ -305,6 +432,7 @@ function renderPlaygroundBlueprint(themeSlug: string): string {
       {
         step: "setSiteOptions",
         options: {
+          blogname: siteTitle,
           stylesheet: themeSlug,
           template: themeSlug
         }
@@ -312,4 +440,3 @@ function renderPlaygroundBlueprint(themeSlug: string): string {
     ]
   });
 }
-
