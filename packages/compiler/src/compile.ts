@@ -325,7 +325,15 @@ add_action(
 
 add_filter(
 \t'term_link',
-\tstatic function ( string $termlink ): string {
+\tstatic function ( string $termlink, WP_Term $term, string $taxonomy ): string {
+\t\tif ( 'category' === $taxonomy ) {
+\t\t\treturn home_url( '/category/' . $term->slug . '/' );
+\t\t}
+
+\t\tif ( 'post_tag' === $taxonomy ) {
+\t\t\treturn home_url( '/tag/' . $term->slug . '/' );
+\t\t}
+
 \t\tif ( ! preg_match( '#^(https?:)?//#', $termlink ) && ! str_starts_with( $termlink, '/' ) ) {
 \t\t\treturn home_url( '/' . ltrim( $termlink, '/' ) );
 \t\t}
@@ -333,7 +341,7 @@ add_filter(
 \t\treturn $termlink;
 \t},
 \t10,
-\t1
+\t3
 );
 
 add_filter(
@@ -377,6 +385,11 @@ See resources.json for bundled asset provenance.
 function renderBaseCss(blueprint: Blueprint): string {
   const tokens = blueprint.tokens;
   const heroAsset = (blueprint.assets ?? []).find((asset) => asset.role === "hero");
+  const archiveArtAsset = (blueprint.assets ?? []).find((asset) => asset.path.includes("archive-map"));
+  const notFoundArtAsset = (blueprint.assets ?? []).find((asset) => asset.path.includes("not-found-lantern"));
+  const featureCardAssets = ["story-market-day", "story-teacher", "story-brass-band"].map((needle) =>
+    (blueprint.assets ?? []).find((asset) => asset.path.includes(needle))
+  );
   const fontFaces = renderFontFaces(blueprint);
   const heroArtBackground = heroAsset
     ? `background-image:
@@ -385,6 +398,27 @@ function renderBaseCss(blueprint: Blueprint): string {
     : `background-image:
     radial-gradient(circle at 35% 28%, rgba(182, 63, 45, 0.26), transparent 32%),
     linear-gradient(135deg, rgba(36, 95, 104, 0.34), rgba(241, 230, 210, 0.82));`;
+  const archiveArtBackground = archiveArtAsset
+    ? `background-image: url("${cssAssetUrl(archiveArtAsset.path)}");`
+    : `background:
+    linear-gradient(135deg, rgba(36, 95, 104, 0.18), rgba(182, 63, 45, 0.08)),
+    var(--wp--preset--color--muted, ${tokens.color.muted ?? "#f4f4f4"});`;
+  const notFoundArtBackground = notFoundArtAsset
+    ? `background-image: url("${cssAssetUrl(notFoundArtAsset.path)}");`
+    : `background:
+    linear-gradient(135deg, rgba(182, 63, 45, 0.16), rgba(36, 95, 104, 0.08)),
+    var(--wp--preset--color--muted, ${tokens.color.muted ?? "#f4f4f4"});`;
+  const featureCardBackground = (index: number, fallback: string) => {
+    const asset = featureCardAssets[index];
+
+    if (!asset) {
+      return fallback;
+    }
+
+    return `background:
+    linear-gradient(180deg, rgba(23, 19, 15, 0), rgba(23, 19, 15, 0.16)),
+    url("${cssAssetUrl(asset.path)}") center / cover no-repeat;`;
+  };
   return `${fontFaces}body {
   background:
     linear-gradient(90deg, rgba(182, 63, 45, 0.024) 0 1px, transparent 1px 100%),
@@ -644,9 +678,9 @@ function renderBaseCss(blueprint: Blueprint): string {
 }
 
 .blocksmith-card::before {
-  background:
+  ${featureCardBackground(0, `background:
     linear-gradient(135deg, rgba(36, 95, 104, 0.45), rgba(182, 63, 45, 0.12)),
-    var(--wp--preset--color--muted, ${tokens.color.muted ?? "#f4f4f4"});
+    var(--wp--preset--color--muted, ${tokens.color.muted ?? "#f4f4f4"});`)}
   content: "";
   display: block;
   height: 9.5rem;
@@ -654,15 +688,15 @@ function renderBaseCss(blueprint: Blueprint): string {
 }
 
 .blocksmith-card-2::before {
-  background:
+  ${featureCardBackground(1, `background:
     linear-gradient(135deg, rgba(23, 19, 15, 0.45), rgba(36, 95, 104, 0.16)),
-    var(--wp--preset--color--muted, ${tokens.color.muted ?? "#f4f4f4"});
+    var(--wp--preset--color--muted, ${tokens.color.muted ?? "#f4f4f4"});`)}
 }
 
 .blocksmith-card-3::before {
-  background:
+  ${featureCardBackground(2, `background:
     linear-gradient(135deg, rgba(182, 63, 45, 0.24), rgba(241, 230, 210, 0.88)),
-    var(--wp--preset--color--muted, ${tokens.color.muted ?? "#f4f4f4"});
+    var(--wp--preset--color--muted, ${tokens.color.muted ?? "#f4f4f4"});`)}
 }
 
 .blocksmith-card h3 {
@@ -1164,14 +1198,28 @@ function renderBaseCss(blueprint: Blueprint): string {
   max-width: 38rem;
 }
 
-.blocksmith-archive-tools {
+.blocksmith-archive-sidecar {
   align-self: end;
-  border: 1px solid var(--wp--preset--color--border, ${tokens.color.border ?? "#dddddd"});
-  border-radius: ${tokens.radius?.md ?? "6px"};
   display: grid;
   gap: var(--wp--preset--spacing--sm);
   grid-column: 2;
   grid-row: 1 / span 3;
+}
+
+.blocksmith-archive-art {
+  ${archiveArtBackground}
+  background-position: center;
+  background-size: cover;
+  border: 1px solid var(--wp--preset--color--border, ${tokens.color.border ?? "#dddddd"});
+  border-radius: ${tokens.radius?.md ?? "6px"};
+  min-height: 13rem;
+}
+
+.blocksmith-archive-tools {
+  border: 1px solid var(--wp--preset--color--border, ${tokens.color.border ?? "#dddddd"});
+  border-radius: ${tokens.radius?.md ?? "6px"};
+  display: grid;
+  gap: var(--wp--preset--spacing--sm);
   padding: var(--wp--preset--spacing--md);
 }
 
@@ -1311,15 +1359,34 @@ function renderBaseCss(blueprint: Blueprint): string {
 }
 
 .blocksmith-post-card-media {
-  min-height: 10rem;
+  aspect-ratio: 4 / 3;
+  margin: 0;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .blocksmith-post-card-archive .blocksmith-post-card-media {
-  min-height: 11rem;
+  aspect-ratio: 4 / 3;
 }
 
 .blocksmith-post-card-related .blocksmith-post-card-media {
-  min-height: 8rem;
+  aspect-ratio: 4 / 3;
+}
+
+.blocksmith-post-card-media a,
+.blocksmith-post-card-media img {
+  display: block;
+  height: 100%;
+  width: 100%;
+}
+
+.blocksmith-post-card-media img {
+  object-fit: cover;
+  transition: transform 180ms ease;
+}
+
+.blocksmith-post-card:hover .blocksmith-post-card-media img {
+  transform: scale(1.025);
 }
 
 .blocksmith-post-card-terms {
@@ -1358,6 +1425,17 @@ function renderBaseCss(blueprint: Blueprint): string {
   font-size: 4.25rem;
   margin-left: auto;
   margin-right: auto;
+}
+
+.blocksmith-not-found-art {
+  ${notFoundArtBackground}
+  background-position: center;
+  background-size: cover;
+  border: 1px solid var(--wp--preset--color--border, ${tokens.color.border ?? "#dddddd"});
+  border-radius: ${tokens.radius?.md ?? "6px"};
+  margin: var(--wp--preset--spacing--lg) auto 0;
+  min-height: 18rem;
+  max-width: 58rem;
 }
 
 .blocksmith-recovery-panel {
@@ -1407,6 +1485,7 @@ function renderBaseCss(blueprint: Blueprint): string {
   .blocksmith-archive-header .blocksmith-template-kicker,
   .blocksmith-archive-header h1,
   .blocksmith-archive-header .wp-block-term-description,
+  .blocksmith-archive-sidecar,
   .blocksmith-archive-tools {
     grid-column: auto;
     grid-row: auto;
@@ -1538,7 +1617,7 @@ function renderBaseCss(blueprint: Blueprint): string {
 
   .blocksmith-query-archive .blocksmith-post-card-media {
     grid-row: 1 / span 4;
-    min-height: 100%;
+    height: 100%;
   }
 
   .blocksmith-query-archive .blocksmith-post-card > *:not(.blocksmith-post-card-media) {
@@ -1656,10 +1735,12 @@ function renderPlaygroundBlueprint(themeSlug: string, siteTitle: string): string
 function renderStarterContentPhp(): string {
   return `<?php
 require '/wordpress/wp-load.php';
+require_once ABSPATH . 'wp-admin/includes/file.php';
+require_once ABSPATH . 'wp-admin/includes/image.php';
 
 $existing = get_posts(array(
     'numberposts' => -1,
-    'post_type' => array('post', 'page'),
+    'post_type' => array('post', 'page', 'attachment'),
     'post_status' => 'any',
 ));
 
@@ -1669,6 +1750,53 @@ foreach ($existing as $post) {
 
 $author = get_user_by('login', 'admin');
 $author_id = $author ? (int) $author->ID : 1;
+
+update_option('show_avatars', 0);
+
+if (!function_exists('blocksmith_create_attachment_from_theme_asset')) {
+function blocksmith_create_attachment_from_theme_asset(string $relative_path, string $title, int $author_id): int {
+    $theme_path = get_theme_file_path($relative_path);
+
+    if (!file_exists($theme_path)) {
+        return 0;
+    }
+
+    $upload = wp_upload_bits(basename($relative_path), null, file_get_contents($theme_path));
+
+    if (!empty($upload['error']) || empty($upload['file'])) {
+        return 0;
+    }
+
+    $filetype = wp_check_filetype($upload['file']);
+    $attachment_id = wp_insert_attachment(array(
+        'post_mime_type' => $filetype['type'] ?: 'image/jpeg',
+        'post_title' => $title,
+        'post_content' => '',
+        'post_status' => 'inherit',
+        'post_author' => $author_id,
+    ), $upload['file']);
+
+    if (is_wp_error($attachment_id)) {
+        return 0;
+    }
+
+    $metadata = wp_generate_attachment_metadata($attachment_id, $upload['file']);
+    wp_update_attachment_metadata($attachment_id, $metadata);
+    update_post_meta($attachment_id, '_wp_attachment_image_alt', $title);
+
+    return (int) $attachment_id;
+}
+}
+
+if (!function_exists('blocksmith_set_featured_image_from_theme_asset')) {
+function blocksmith_set_featured_image_from_theme_asset(int $post_id, string $relative_path, string $title, int $author_id): void {
+    $attachment_id = blocksmith_create_attachment_from_theme_asset($relative_path, $title, $author_id);
+
+    if ($attachment_id > 0) {
+        set_post_thumbnail($post_id, $attachment_id);
+    }
+}
+}
 
 $pages = array(
     array('title' => 'Regionally Famous Home', 'slug' => 'home', 'content' => '<p>The front page uses the theme front-page.html template.</p>'),
@@ -1738,6 +1866,7 @@ $stories = array(
         'excerpt' => 'Radishes, gossip, and the old folding table that anchors Saturday morning.',
         'categories' => array('Dispatch', 'Place notes'),
         'tags' => array('Local', 'Markets', 'Food'),
+        'image' => 'assets/images/regionally-famous/story-market-day.jpg',
         'date' => '2026-06-18 09:00:00',
     ),
     array(
@@ -1746,6 +1875,7 @@ $stories = array(
         'excerpt' => 'The marquee is lit again, and the neighborhood remembers how to line up.',
         'categories' => array('Dispatch', 'Place notes'),
         'tags' => array('Local', 'Cinema'),
+        'image' => 'assets/images/regionally-famous/story-old-cinema.jpg',
         'date' => '2026-06-14 09:00:00',
     ),
     array(
@@ -1754,6 +1884,7 @@ $stories = array(
         'excerpt' => 'A careful conversation about classrooms, corner stores, and civic patience.',
         'categories' => array('Dispatch', 'People features'),
         'tags' => array('Local', 'Schools'),
+        'image' => 'assets/images/regionally-famous/story-teacher.jpg',
         'date' => '2026-06-10 09:00:00',
     ),
     array(
@@ -1762,14 +1893,16 @@ $stories = array(
         'excerpt' => 'Every Thursday, the park gets loud enough to feel like a promise.',
         'categories' => array('Dispatch', 'Small legends'),
         'tags' => array('Local', 'Music'),
+        'image' => 'assets/images/regionally-famous/story-brass-band.jpg',
         'date' => '2026-06-06 09:00:00',
     ),
     array(
-        'title' => 'Where to eat right now',
-        'slug' => 'where-to-eat-right-now',
+        'title' => 'Where to eat after the late show',
+        'slug' => 'where-to-eat-after-the-late-show',
         'excerpt' => 'Five modest counters, one perfect soup, and a dessert worth crossing town for.',
         'categories' => array('Dispatch', 'Guides'),
         'tags' => array('Local', 'Food'),
+        'image' => 'assets/images/regionally-famous/story-food-guide.jpg',
         'date' => '2026-06-02 09:00:00',
     ),
 );
@@ -1811,6 +1944,10 @@ foreach ($stories as $story) {
 
         if (!empty($tag_ids)) {
             wp_set_post_terms($post_id, $tag_ids, 'post_tag');
+        }
+
+        if (!empty($story['image'])) {
+            blocksmith_set_featured_image_from_theme_asset((int) $post_id, $story['image'], $story['title'], $author_id);
         }
     }
 }

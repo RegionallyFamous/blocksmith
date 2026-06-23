@@ -15,9 +15,57 @@ policy:
   allowRawCode: false
   allowRemoteAssets: false
 assets:
+  - path: assets/images/regionally-famous/hero-dance-hall.jpg
+    source: assets/images/regionally-famous/hero-dance-hall.jpg
+    role: hero
+    license: AI-generated; human review required before public release
+    author: OpenAI Imagegen
+    generated: true
+  - path: assets/images/regionally-famous/story-market-day.jpg
+    source: assets/images/regionally-famous/story-market-day.jpg
+    role: content
+    license: AI-generated; human review required before public release
+    author: OpenAI Imagegen
+    generated: true
+  - path: assets/images/regionally-famous/story-old-cinema.jpg
+    source: assets/images/regionally-famous/story-old-cinema.jpg
+    role: content
+    license: AI-generated; human review required before public release
+    author: OpenAI Imagegen
+    generated: true
+  - path: assets/images/regionally-famous/story-teacher.jpg
+    source: assets/images/regionally-famous/story-teacher.jpg
+    role: content
+    license: AI-generated; human review required before public release
+    author: OpenAI Imagegen
+    generated: true
+  - path: assets/images/regionally-famous/story-brass-band.jpg
+    source: assets/images/regionally-famous/story-brass-band.jpg
+    role: content
+    license: AI-generated; human review required before public release
+    author: OpenAI Imagegen
+    generated: true
+  - path: assets/images/regionally-famous/story-food-guide.jpg
+    source: assets/images/regionally-famous/story-food-guide.jpg
+    role: content
+    license: AI-generated; human review required before public release
+    author: OpenAI Imagegen
+    generated: true
+  - path: assets/images/regionally-famous/archive-map.jpg
+    source: assets/images/regionally-famous/archive-map.jpg
+    role: content
+    license: AI-generated; human review required before public release
+    author: OpenAI Imagegen
+    generated: true
+  - path: assets/images/regionally-famous/not-found-lantern.jpg
+    source: assets/images/regionally-famous/not-found-lantern.jpg
+    role: content
+    license: AI-generated; human review required before public release
+    author: OpenAI Imagegen
+    generated: true
   - path: assets/images/regionally-famous-masthead.jpg
     source: assets/regionally-famous-masthead.jpg
-    role: hero
+    role: reference
     license: AI-generated; human review required before public release
     author: OpenAI Imagegen
     generated: true

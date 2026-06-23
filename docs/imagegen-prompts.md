@@ -60,6 +60,38 @@ Extraction notes from the selected comps:
 - Page/404: utility routes still need designed hierarchy, search recovery, category/topic links, and latest-story onward paths.
 - Mobile: smaller masthead, compact archive cards, retained article intent, and footer actions that do not swallow the viewport.
 
+## Regionally Famous production image set
+
+Generated with the built-in Imagegen tool, copied into `examples/assets/images/regionally-famous/`, optimized to JPG, and consumed by the compiled theme. These are not just references: the starter-content seed step imports story images into the WordPress media library and assigns them as featured images so Query Loop cards, single templates, archives, search results, and recovery routes show real WordPress media.
+
+Saved assets:
+
+- `hero-dance-hall.jpg`: homepage hero editorial photograph.
+- `story-market-day.jpg`: featured image for "Market Day on 4th Street".
+- `story-old-cinema.jpg`: featured image for "An Old Cinema Gets New Life".
+- `story-teacher.jpg`: featured image for "A Teacher With the Long View".
+- `story-brass-band.jpg`: featured image for "The Brass Band of Whitman Park".
+- `story-food-guide.jpg`: featured image for "Where to Eat After the Late Show".
+- `archive-map.jpg`: archive/search sidecar artwork.
+- `not-found-lantern.jpg`: 404 recovery artwork.
+
+Prompt pattern:
+
+```text
+Use case: photorealistic-natural
+Asset type: production WordPress theme editorial image
+Primary request: Create a polished editorial image for Regionally Famous Dispatch, a local independent publication theme. This image will be used as [homepage hero/story featured image/archive support art/404 support art], not as a generic stock placeholder.
+Scene/backdrop: [specific local scene or object tied to the route/story].
+Subject: [clear subject with no readable text, logos, or fake UI].
+Style/medium: premium independent magazine photography or tactile editorial illustration, warm ink-and-paper sensibility, real material texture, plausible for a WordPress block theme.
+Composition/framing: strong crop for responsive web use, clear focal subject, room for headline/sidebar overlays where needed, no browser chrome.
+Lighting/mood: warm natural light, confident local editorial tone, polished but not corporate.
+Color palette: cream paper, black ink, brick red, muted teal, warm tan, restrained whites.
+Constraints: no readable text, no brand marks, no watermark, no distorted hands/faces, no fake UI, no random colors outside the theme palette.
+```
+
+Production rule: if an Imagegen route comp shows photography, illustration, or map texture as a structural part of the layout, generate or supply that asset separately and wire it into WordPress-native surfaces. Use `core/post-featured-image` for post media, imported Media Library attachments for seeded demos, and CSS backgrounds only for decorative route art that is not content.
+
 ## Regionally Famous masthead
 
 Generated with the built-in Imagegen tool and saved as `examples/assets/regionally-famous-masthead.jpg`.

@@ -507,9 +507,12 @@ function archiveHeader(template?: string): string {
   }
 
   children.push(
-    `<div class="blocksmith-archive-tools">
+    `<div class="blocksmith-archive-sidecar">
+  <div class="blocksmith-archive-art" aria-hidden="true"></div>
+  <div class="blocksmith-archive-tools">
   <div class="blocksmith-archive-search">${block("search", { label: "Search the archive", showLabel: false, placeholder: "Search dispatches...", buttonText: "Search" })}</div>
   <div class="blocksmith-topic-links">${topicLinks()}</div>
+</div>
 </div>`
   );
 
@@ -568,6 +571,7 @@ function notFoundSection(section: BlueprintSection): string {
       `<p class="blocksmith-template-kicker">404</p>`,
       heading(section.title ?? "Nothing found.", 1, "center"),
       paragraph(section.text ?? "We looked high and low, but couldn't find that page. Let's get you back on track.", { align: "center" }),
+      `<div class="blocksmith-not-found-art" aria-hidden="true"></div>`,
       `<div class="blocksmith-recovery-panel">
   ${heading("Search the archive", 2)}
   ${block("search", { label: "Search", showLabel: false, placeholder: "Search stories, topics, people...", buttonText: "Search" })}
@@ -613,7 +617,7 @@ function postGrid(section: BlueprintSection, options: { inheritQuery?: boolean; 
         {},
         group(
           [
-            `<div class="blocksmith-post-card-media" aria-hidden="true"></div>`,
+            block("post-featured-image", { isLink: true, className: "blocksmith-post-card-media" }),
             block("post-terms", { term: "category", separator: " / ", className: "blocksmith-post-card-terms" }),
             block("post-title", { isLink: true, level: 3 }),
             block("post-excerpt", { moreText: "Read more" }),

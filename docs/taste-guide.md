@@ -67,6 +67,8 @@ Recommended flow:
 
 The comp should describe the theme's editorial world while keeping final text, navigation, and content as real HTML. Avoid fake browser chrome, brand marks, watermarks, excessive decoration, and tiny unreadable UI text.
 
+Treat asset parity as part of taste. If the comp relies on photographs, illustrations, map textures, or specific image crops, generate or provide those assets separately and wire them into the theme. Post/story images should become WordPress media attachments and render through `core/post-featured-image`; decorative route art can be committed theme assets used by CSS. A theme with placeholder gradients where the comp had real media should fail the polish pass.
+
 ## Route-family comp loop
 
 For production-quality themes, generate comps for the route family, then build those decisions back into WordPress primitives:
@@ -79,3 +81,14 @@ For production-quality themes, generate comps for the route family, then build t
 - Mobile: masthead compression, card density, readable article measure, tappable controls, footer restraint.
 
 The compiler should never paste the comp as an image. It should translate the comp into deterministic tokens, block markup, theme.json support, section rhythm, and CSS rules that preserve real links, loops, and WordPress editing behavior.
+
+## Visual Evidence
+
+For serious theme work, keep a side-by-side evidence artifact:
+
+- Imagegen route-family comp.
+- Live desktop and mobile screenshots from Playground.
+- Route crawler output proving links, loops, media, search, archives, singles, pages, and 404 work.
+- Notes on the largest remaining mismatches: assets, crop, spacing, density, hierarchy, footer/header weight, or mobile composition.
+
+The evidence artifact keeps the polish loop honest because it compares the intended design against the working WordPress result, not against memory.
