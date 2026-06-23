@@ -40,6 +40,17 @@ Taste findings should give concrete fixes:
 - Improve `base` and `contrast` token ratio.
 - Use section variants preferred by the active profile.
 
+## Premium polish loop
+
+Premium polish is made from repeatable choices the compiler can inspect:
+
+- Use a spacing ladder: related text gets tight gaps, components get medium gaps, section changes get large gaps, and major page turns get the largest gaps.
+- Keep typography role-based: display, page title, card title, body, metadata, navigation, and labels should each have a deliberate size, weight, line-height, and measure.
+- Align optical edges across header, hero, cards, archives, post pages, footer, and mobile.
+- Use one dominant surface treatment plus one supporting treatment. Too many equal borders, shadows, fills, and accents make a theme feel cheaper.
+- Make repeated cards stable: consistent media height, equal-height bodies, predictable gutters, and metadata anchored low.
+- Score the whole route family, not just the front page: archive, category, tag, author, date, search, single, page, 404, header, footer, and mobile.
+
 ## Imagegen-directed taste loop
 
 Blocksmith can use generated bitmap comps as visual direction, not as vague decoration. A single nice masthead image is not enough; the useful artifact is a whole-page reference that shows hierarchy, rhythm, density, and footer/header strength.

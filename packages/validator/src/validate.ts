@@ -44,7 +44,32 @@ export function validateBlueprint(value: unknown): ValidationReport {
 
 export function validateThemeOutput(files: Record<string, string>, blueprint?: Blueprint): ValidationReport {
   const diagnostics: Diagnostic[] = [];
-  const required = ["style.css", "readme.txt", "theme.json", "templates/index.html", "parts/header.html", "parts/footer.html"];
+  const required = [
+    "style.css",
+    "readme.txt",
+    "theme.json",
+    "parts/header.html",
+    "parts/footer.html",
+    "templates/index.html",
+    "templates/front-page.html",
+    "templates/home.html",
+    "templates/single.html",
+    "templates/single-post.html",
+    "templates/singular.html",
+    "templates/attachment.html",
+    "templates/embed.html",
+    "templates/page.html",
+    "templates/page-wide.html",
+    "templates/privacy-policy.html",
+    "templates/archive.html",
+    "templates/taxonomy.html",
+    "templates/category.html",
+    "templates/tag.html",
+    "templates/author.html",
+    "templates/date.html",
+    "templates/search.html",
+    "templates/404.html"
+  ];
 
   for (const path of required) {
     if (!files[path]) {
@@ -53,7 +78,7 @@ export function validateThemeOutput(files: Record<string, string>, blueprint?: B
         severity: "error",
         path,
         message: `Generated theme is missing ${path}.`,
-        suggestion: "Compiler must emit all required block theme files."
+        suggestion: "Compiler must emit the full Blocksmith block theme template baseline."
       });
     }
   }
@@ -76,7 +101,12 @@ function validateThemeJson(content: string | undefined, diagnostics: Diagnostic[
   }
 
   try {
-    const parsed = JSON.parse(content) as { version?: unknown; settings?: unknown; styles?: unknown };
+    const parsed = JSON.parse(content) as {
+      customTemplates?: unknown;
+      version?: unknown;
+      settings?: { blocks?: unknown };
+      styles?: { blocks?: unknown };
+    };
     if (parsed.version !== 3) {
       diagnostics.push({
         code: "BS_THEME_JSON_VERSION",
@@ -93,6 +123,24 @@ function validateThemeJson(content: string | undefined, diagnostics: Diagnostic[
         path: "theme.json",
         message: "theme.json must include settings and styles.",
         suggestion: "Emit settings and styles from blueprint tokens."
+      });
+    }
+    if (!parsed.settings?.blocks || !parsed.styles?.blocks) {
+      diagnostics.push({
+        code: "BS_THEME_JSON_BLOCK_SURFACE",
+        severity: "warning",
+        path: "theme.json/settings/blocks",
+        message: "theme.json should include block-level settings and styles for the editor surface.",
+        suggestion: "Emit settings.blocks and styles.blocks for core layout, query, navigation, search, and post blocks."
+      });
+    }
+    if (!Array.isArray(parsed.customTemplates) || parsed.customTemplates.length === 0) {
+      diagnostics.push({
+        code: "BS_THEME_JSON_CUSTOM_TEMPLATES",
+        severity: "warning",
+        path: "theme.json/customTemplates",
+        message: "theme.json does not expose any custom template metadata.",
+        suggestion: "Add customTemplates entries for generated custom template files."
       });
     }
   } catch (error) {

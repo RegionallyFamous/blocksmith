@@ -27,7 +27,7 @@ export function renderPatternFile(args: {
 ${args.content}`;
 }
 
-export function renderSection(section: BlueprintSection, blueprint: Blueprint, context: "template" | "part" | "pattern", options: { template?: string } = {}): string {
+export function renderSection(section: BlueprintSection, blueprint: Blueprint, context: "template" | "part" | "pattern", options: { template?: string; sectionIndex?: number } = {}): string {
   const profile = blueprint.tasteProfile ?? "editorial-clean";
   const variant = section.variant ?? defaultVariantFor(section.kind, profile);
 
@@ -82,7 +82,7 @@ export function renderSection(section: BlueprintSection, blueprint: Blueprint, c
         { align: "full", className: "blocksmith-cta" }
       );
     case "postGrid":
-      return postGrid(section, { inheritQuery: options.template === "archive" || options.template === "search" });
+      return postGrid(section, { inheritQuery: isInheritedQueryTemplate(options.template), queryId: queryIdFor(options) });
     case "archiveHeader":
       return archiveHeader(options.template);
     case "postHeader":
@@ -96,7 +96,7 @@ export function renderSection(section: BlueprintSection, blueprint: Blueprint, c
     case "pagination":
       return block("query-pagination", { layout: { type: "flex", justifyContent: "space-between" } }, `<div class="wp-block-query-pagination">${[block("query-pagination-previous"), block("query-pagination-numbers"), block("query-pagination-next")].join("\n")}</div>`);
     case "searchResults":
-      return postGrid({ ...section, kind: "postGrid" }, { inheritQuery: true });
+      return postGrid({ ...section, kind: "postGrid" }, { inheritQuery: true, queryId: queryIdFor(options) });
     case "notFound":
       return group(
         [heading(section.title ?? "Nothing found", 1, "center"), paragraph(section.text ?? "Try searching for something else.", { align: "center" }), block("search", { label: "Search", showLabel: false, buttonText: "Search" })].join("\n"),
@@ -126,24 +126,65 @@ export function renderThemeJson(blueprint: Blueprint) {
 
   return stableJson({
     $schema: "https://schemas.wp.org/wp/6.6/theme.json",
+    customTemplates: [
+      {
+        name: "page-wide",
+        postTypes: ["page"],
+        title: "Wide Page"
+      }
+    ],
     version: 3,
     settings: {
       appearanceTools: true,
+      useRootPaddingAwareAlignments: true,
+      border: {
+        color: true,
+        radius: true,
+        style: true,
+        width: true
+      },
       color: {
         custom: false,
+        customDuotone: false,
+        customGradient: false,
+        defaultDuotone: false,
+        defaultGradients: false,
         defaultPalette: false,
+        gradients: gradients(tokens),
         palette: colorPalette
+      },
+      dimensions: {
+        aspectRatio: true,
+        minHeight: true
       },
       layout: {
         contentSize: tokens.layout.contentSize,
         wideSize: tokens.layout.wideSize
       },
+      lightbox: {
+        allowEditing: true,
+        enabled: false
+      },
+      position: {
+        sticky: true
+      },
+      shadow: {
+        defaultPresets: false,
+        presets: shadowPresets(tokens)
+      },
       spacing: {
+        blockGap: true,
+        margin: true,
+        padding: true,
         spacingScale: { steps: 0 },
-        spacingSizes: spacingSizes(tokens)
+        spacingSizes: spacingSizes(tokens),
+        units: ["px", "rem", "em", "%", "vh", "vw"]
       },
       typography: {
         customFontSize: false,
+        defaultFontSizes: false,
+        dropCap: true,
+        fluid: true,
         fontFamilies: [
           {
             fontFamily: tokens.typography.bodyFont,
@@ -158,10 +199,66 @@ export function renderThemeJson(blueprint: Blueprint) {
             slug: "heading"
           }
         ],
-        fontSizes: fontSizes(tokens)
+        fontSizes: fontSizes(tokens),
+        fontStyle: true,
+        fontWeight: true,
+        letterSpacing: true,
+        lineHeight: true,
+        textDecoration: true,
+        textTransform: true
+      },
+      blocks: {
+        "core/button": {
+          border: {
+            radius: true
+          },
+          spacing: {
+            padding: true
+          },
+          typography: {
+            fontWeight: true,
+            textTransform: true
+          }
+        },
+        "core/group": {
+          spacing: {
+            blockGap: true,
+            margin: true,
+            padding: true
+          }
+        },
+        "core/navigation": {
+          typography: {
+            fontSize: true,
+            fontWeight: true,
+            textTransform: true
+          }
+        },
+        "core/post-template": {
+          spacing: {
+            blockGap: true
+          }
+        },
+        "core/query": {
+          spacing: {
+            margin: true,
+            padding: true
+          }
+        },
+        "core/search": {
+          border: {
+            color: true,
+            radius: true,
+            width: true
+          },
+          spacing: {
+            margin: true
+          }
+        }
       },
       custom: {
         blocksmith: {
+          templateCoverage: "full-v1",
           tasteProfile: blueprint.tasteProfile ?? "editorial-clean"
         }
       }
@@ -194,12 +291,65 @@ export function renderThemeJson(blueprint: Blueprint) {
         }
       },
       spacing: {
-        blockGap: "var:preset|spacing|md"
+        blockGap: "var:preset|spacing|md",
+        padding: {
+          bottom: "0",
+          left: "clamp(1rem, 3vw, 2rem)",
+          right: "clamp(1rem, 3vw, 2rem)",
+          top: "0"
+        }
       },
       typography: {
         fontFamily: "var:preset|font-family|body",
         fontSize: "var:preset|font-size|base",
         lineHeight: "1.62"
+      },
+      blocks: {
+        "core/button": {
+          border: {
+            radius: tokens.radius?.sm ?? "2px"
+          },
+          typography: {
+            fontWeight: "800",
+            textTransform: "uppercase"
+          }
+        },
+        "core/navigation": {
+          typography: {
+            fontFamily: "var:preset|font-family|body",
+            fontSize: "var:preset|font-size|small",
+            fontWeight: "700"
+          }
+        },
+        "core/post-date": {
+          typography: {
+            fontSize: "var:preset|font-size|small"
+          }
+        },
+        "core/post-excerpt": {
+          typography: {
+            fontSize: "var:preset|font-size|base",
+            lineHeight: "1.55"
+          }
+        },
+        "core/post-title": {
+          typography: {
+            fontFamily: "var:preset|font-family|heading",
+            lineHeight: "1.12"
+          }
+        },
+        "core/query": {
+          spacing: {
+            blockGap: "var:preset|spacing|md"
+          }
+        },
+        "core/search": {
+          border: {
+            color: "var:preset|color|contrast",
+            radius: tokens.radius?.sm ?? "2px",
+            width: "1px"
+          }
+        }
       }
     },
     templateParts: [
@@ -358,11 +508,30 @@ function archiveHeader(template?: string): string {
   return group(children.join("\n"), { className: "blocksmith-archive-header" });
 }
 
-function postGrid(section: BlueprintSection, options: { inheritQuery?: boolean } = {}): string {
+const inheritedQueryTemplates = new Set([
+  "home",
+  "archive",
+  "taxonomy",
+  "category",
+  "tag",
+  "author",
+  "date",
+  "search"
+]);
+
+function isInheritedQueryTemplate(template?: string): boolean {
+  return template ? inheritedQueryTemplates.has(template) : false;
+}
+
+function queryIdFor(options: { template?: string; sectionIndex?: number }): number {
+  const seed = Array.from(options.template ?? "query").reduce((sum, char) => sum + char.charCodeAt(0), 0);
+  return seed + (options.sectionIndex ?? 0) + 1;
+}
+
+function postGrid(section: BlueprintSection, options: { inheritQuery?: boolean; queryId?: number } = {}): string {
   const perPage = section.query?.perPage ?? 6;
   const query = options.inheritQuery
     ? {
-        perPage,
         inherit: true
       }
     : {
@@ -376,14 +545,17 @@ function postGrid(section: BlueprintSection, options: { inheritQuery?: boolean }
         search: "",
         exclude: [],
         sticky: "",
-        inherit: false
+        inherit: false,
+        taxQuery: null,
+        parents: [],
+        format: []
       };
 
   return block(
     "query",
-    { query, displayLayout: { type: "flex", columns: Math.min(5, perPage) } },
+    { queryId: options.queryId ?? 1, query, tagName: "div", enhancedPagination: true, displayLayout: { type: "flex", columns: Math.min(5, perPage) } },
     [
-      section.title ? `<div id="latest" class="blocksmith-section-heading"><span aria-hidden="true">+</span>${heading(section.title, 2)}${link("View all dispatches ->", "/category/dispatch/")}</div>` : "",
+      section.title ? sectionHeading(section) : "",
       block(
         "post-template",
         {},
@@ -397,9 +569,25 @@ function postGrid(section: BlueprintSection, options: { inheritQuery?: boolean }
           { className: "blocksmith-post-card" }
         )
       ),
+      block(
+        "query-no-results",
+        {},
+        group(
+          [
+            heading("Nothing matched this query.", 2),
+            paragraph("Try another search or browse the latest stories.")
+          ].join("\n"),
+          { className: "blocksmith-query-empty" }
+        )
+      ),
       block("query-pagination", { layout: { type: "flex", justifyContent: "space-between" } }, [block("query-pagination-previous"), block("query-pagination-numbers"), block("query-pagination-next")].join("\n"))
     ].filter(Boolean).join("\n")
   );
+}
+
+function sectionHeading(section: BlueprintSection): string {
+  const cta = section.cta ? link(section.cta.label, section.cta.url) : "";
+  return `<div id="latest" class="blocksmith-section-heading"><span aria-hidden="true">+</span>${heading(section.title ?? "Latest posts", 2)}${cta}</div>`;
 }
 
 function spacingSizes(tokens: BlueprintTokens) {
@@ -408,6 +596,43 @@ function spacingSizes(tokens: BlueprintTokens) {
     size,
     slug
   }));
+}
+
+function gradients(tokens: BlueprintTokens) {
+  const secondary = tokens.color.secondary ?? tokens.color.primary;
+  const surface = tokens.color.surfaceAlt ?? tokens.color.base;
+  return [
+    {
+      gradient: `linear-gradient(135deg, ${tokens.color.primary} 0%, ${secondary} 100%)`,
+      name: "Primary to Secondary",
+      slug: "primary-to-secondary"
+    },
+    {
+      gradient: `linear-gradient(135deg, ${surface} 0%, ${tokens.color.base} 100%)`,
+      name: "Soft Surface",
+      slug: "soft-surface"
+    }
+  ];
+}
+
+function shadowPresets(tokens: BlueprintTokens) {
+  return [
+    {
+      name: "Small",
+      shadow: tokens.shadow?.sm ?? "0 1px 2px rgb(0 0 0 / 0.08)",
+      slug: "small"
+    },
+    {
+      name: "Medium",
+      shadow: tokens.shadow?.md ?? "0 12px 30px rgb(0 0 0 / 0.12)",
+      slug: "medium"
+    },
+    {
+      name: "Large",
+      shadow: tokens.shadow?.lg ?? "0 24px 60px rgb(0 0 0 / 0.16)",
+      slug: "large"
+    }
+  ];
 }
 
 function fontSizes(tokens: BlueprintTokens) {

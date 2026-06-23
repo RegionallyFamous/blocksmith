@@ -102,13 +102,21 @@ tokens:
   spacing:
     xs: "0.5rem"
     sm: "1rem"
-    md: "1.5rem"
-    lg: "3rem"
-    xl: "4.5rem"
-    xxl: "6.5rem"
+    md: "1.75rem"
+    lg: "3.25rem"
+    xl: "5rem"
+    xxl: "7rem"
   layout:
-    contentSize: "740px"
-    wideSize: "1200px"
+    contentSize: "720px"
+    wideSize: "1180px"
+  radius:
+    sm: "3px"
+    md: "6px"
+    lg: "8px"
+  shadow:
+    sm: "0 10px 28px rgba(23, 19, 15, 0.08)"
+    md: "0 22px 56px rgba(23, 19, 15, 0.12)"
+    lg: "0 34px 80px rgba(23, 19, 15, 0.16)"
 templates:
   index:
     sections:
@@ -132,6 +140,9 @@ templates:
             text: "Local lore, tall tales, and the truth in between."
       - kind: postGrid
         title: "Latest dispatches"
+        cta:
+          label: "View all dispatches ->"
+          url: "/category/dispatch/"
         query:
           perPage: 6
       - kind: intro

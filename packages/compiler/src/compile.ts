@@ -17,7 +17,7 @@ export function compileBlueprint(input: Blueprint): CompileResult {
   const files: Record<string, string> = {};
 
   files["style.css"] = renderStyleCss(blueprint, textDomain);
-  files["functions.php"] = renderFunctionsPhp(themeSlug);
+  files["functions.php"] = renderFunctionsPhp(themeSlug, textDomain);
   files["readme.txt"] = renderReadme(blueprint);
   files["theme.json"] = renderThemeJson(blueprint);
   files["resources.json"] = stableJson({
@@ -52,7 +52,7 @@ export function compileBlueprint(input: Blueprint): CompileResult {
         title: patternTitle,
         slug: patternSlug,
         categories: ["featured"],
-        content: renderSection(section, blueprint, "pattern", { template: templateSlug })
+        content: renderSection(section, blueprint, "pattern", { template: templateSlug, sectionIndex: index })
       });
       templateLines.push(renderPatternRef(patternSlug));
     });
@@ -127,44 +127,106 @@ function defaultParts(blueprint: Blueprint): Record<string, BlueprintTemplate> {
 }
 
 function defaultTemplates(blueprint: Blueprint): Record<string, BlueprintTemplate> {
+  const frontPageSections = blueprint.templates["front-page"]?.sections ?? blueprint.templates.index?.sections ?? [
+    { kind: "part", ref: "header" },
+    { kind: "hero", title: blueprint.metadata.name, text: blueprint.metadata.description ?? "A focused WordPress block theme." },
+    { kind: "postGrid", title: "Latest posts", query: { perPage: 6 } },
+    { kind: "part", ref: "footer" }
+  ];
+  const postIndexSections: BlueprintSection[] = [
+    { kind: "part", ref: "header" },
+    { kind: "postGrid", title: "Latest posts", query: { perPage: 9 } },
+    { kind: "part", ref: "footer" }
+  ];
+  const archiveSections: BlueprintSection[] = [
+    { kind: "part", ref: "header" },
+    { kind: "archiveHeader" },
+    { kind: "postGrid", query: { perPage: 9 } },
+    { kind: "part", ref: "footer" }
+  ];
+  const singleSections: BlueprintSection[] = [
+    { kind: "part", ref: "header" },
+    { kind: "postHeader" },
+    { kind: "featuredImage" },
+    { kind: "postContent" },
+    { kind: "comments" },
+    { kind: "part", ref: "footer" }
+  ];
+  const pageSections: BlueprintSection[] = [
+    { kind: "part", ref: "header" },
+    { kind: "postHeader" },
+    { kind: "postContent" },
+    { kind: "part", ref: "footer" }
+  ];
+
   const base: Record<string, BlueprintTemplate> = {
+    "front-page": {
+      title: "Front Page",
+      sections: frontPageSections
+    },
     index: {
       title: "Index",
-      sections: [
-        { kind: "part", ref: "header" },
-        { kind: "hero", title: blueprint.metadata.name, text: blueprint.metadata.description ?? "A focused WordPress block theme." },
-        { kind: "postGrid", title: "Latest posts", query: { perPage: 6 } },
-        { kind: "part", ref: "footer" }
-      ]
+      sections: frontPageSections
+    },
+    home: {
+      title: "Home",
+      sections: postIndexSections
     },
     single: {
       title: "Single",
-      sections: [
-        { kind: "part", ref: "header" },
-        { kind: "postHeader" },
-        { kind: "featuredImage" },
-        { kind: "postContent" },
-        { kind: "comments" },
-        { kind: "part", ref: "footer" }
-      ]
+      sections: singleSections
+    },
+    "single-post": {
+      title: "Single Post",
+      sections: singleSections
+    },
+    singular: {
+      title: "Singular",
+      sections: singleSections
+    },
+    attachment: {
+      title: "Attachment",
+      sections: singleSections
+    },
+    embed: {
+      title: "Embed",
+      sections: singleSections
     },
     archive: {
       title: "Archive",
-      sections: [
-        { kind: "part", ref: "header" },
-        { kind: "archiveHeader" },
-        { kind: "postGrid", query: { perPage: 9 } },
-        { kind: "part", ref: "footer" }
-      ]
+      sections: archiveSections
+    },
+    taxonomy: {
+      title: "Taxonomy",
+      sections: archiveSections
+    },
+    category: {
+      title: "Category",
+      sections: archiveSections
+    },
+    tag: {
+      title: "Tag",
+      sections: archiveSections
+    },
+    author: {
+      title: "Author",
+      sections: archiveSections
+    },
+    date: {
+      title: "Date",
+      sections: archiveSections
     },
     page: {
       title: "Page",
-      sections: [
-        { kind: "part", ref: "header" },
-        { kind: "postHeader" },
-        { kind: "postContent" },
-        { kind: "part", ref: "footer" }
-      ]
+      sections: pageSections
+    },
+    "privacy-policy": {
+      title: "Privacy Policy",
+      sections: pageSections
+    },
+    "page-wide": {
+      title: "Wide Page",
+      sections: pageSections
     },
     search: {
       title: "Search",
@@ -206,12 +268,34 @@ Text Domain: ${textDomain}
 `;
 }
 
-function renderFunctionsPhp(themeSlug: string): string {
+function renderFunctionsPhp(themeSlug: string, textDomain: string): string {
   const handle = `${themeSlug}-blocksmith`;
   return `<?php
 /**
  * Theme setup for generated Blocksmith styles.
  */
+
+add_action(
+\t'after_setup_theme',
+\tstatic function (): void {
+\t\tadd_theme_support( 'wp-block-styles' );
+\t\tadd_theme_support( 'responsive-embeds' );
+\t\tadd_theme_support( 'editor-styles' );
+\t\tadd_editor_style( 'assets/css/blocksmith.css' );
+\t}
+);
+
+add_action(
+\t'init',
+\tstatic function (): void {
+\t\tregister_block_pattern_category(
+\t\t\t'blocksmith',
+\t\t\tarray(
+\t\t\t\t'label' => __( 'Blocksmith', '${textDomain}' ),
+\t\t\t)
+\t\t);
+\t}
+);
 
 add_action(
 \t'wp_enqueue_scripts',
@@ -261,13 +345,17 @@ function renderBaseCss(blueprint: Blueprint): string {
     linear-gradient(135deg, rgba(36, 95, 104, 0.34), rgba(241, 230, 210, 0.82));`;
   return `${fontFaces}body {
   background:
-    linear-gradient(90deg, rgba(182, 63, 45, 0.045) 0 1px, transparent 1px 100%),
-    linear-gradient(0deg, rgba(23, 19, 15, 0.03) 0 1px, transparent 1px 100%),
+    linear-gradient(90deg, rgba(182, 63, 45, 0.024) 0 1px, transparent 1px 100%),
+    linear-gradient(0deg, rgba(23, 19, 15, 0.018) 0 1px, transparent 1px 100%),
+    linear-gradient(180deg, rgba(255, 253, 247, 0.96), rgba(247, 238, 223, 0.42)),
     var(--wp--preset--color--base, ${tokens.color.base});
-  background-size: 96px 96px, 96px 96px, auto;
+  background-size: 112px 112px, 112px 112px, auto, auto;
+  color: var(--wp--preset--color--contrast, ${tokens.color.contrast});
+  text-rendering: optimizeLegibility;
 }
 
 .wp-site-blocks {
+  overflow-x: hidden;
   padding-left: clamp(1rem, 4vw, 3rem);
   padding-right: clamp(1rem, 4vw, 3rem);
 }
@@ -276,7 +364,7 @@ function renderBaseCss(blueprint: Blueprint): string {
   border-bottom: 1px solid var(--wp--preset--color--border, ${tokens.color.border ?? "#dddddd"});
   color: var(--wp--preset--color--contrast, ${tokens.color.contrast});
   display: block;
-  margin-bottom: var(--wp--preset--spacing--md);
+  margin-bottom: var(--wp--preset--spacing--lg);
   padding: 0;
 }
 
@@ -288,7 +376,7 @@ function renderBaseCss(blueprint: Blueprint): string {
   font-size: 0.78rem;
   font-weight: 800;
   justify-content: space-between;
-  padding: 0.55rem clamp(1rem, 4vw, 3rem);
+  padding: 0.62rem clamp(1rem, 4vw, 3rem);
   text-transform: uppercase;
 }
 
@@ -300,8 +388,8 @@ function renderBaseCss(blueprint: Blueprint): string {
   margin-left: auto;
   margin-right: auto;
   max-width: var(--wp--style--global--wide-size, ${tokens.layout.wideSize});
-  min-height: 12rem;
-  padding: var(--wp--preset--spacing--lg) 0 var(--wp--preset--spacing--md);
+  min-height: 10.5rem;
+  padding: var(--wp--preset--spacing--lg) 0 var(--wp--preset--spacing--sm);
 }
 
 .blocksmith-masthead-note {
@@ -325,7 +413,7 @@ function renderBaseCss(blueprint: Blueprint): string {
 
 .blocksmith-site-brand .wp-block-site-title {
   font-family: var(--wp--preset--font-family--heading);
-  font-size: 4.75rem;
+  font-size: 4.45rem;
   font-weight: 800;
   line-height: 0.92;
   margin: 0;
@@ -354,7 +442,7 @@ function renderBaseCss(blueprint: Blueprint): string {
   margin-left: auto;
   margin-right: auto;
   max-width: var(--wp--style--global--wide-size, ${tokens.layout.wideSize});
-  padding: 0.85rem 0;
+  padding: 0.9rem 0 1rem;
 }
 
 .blocksmith-search-label {
@@ -366,12 +454,12 @@ function renderBaseCss(blueprint: Blueprint): string {
 .blocksmith-hero {
   border: 1px solid var(--wp--preset--color--border, ${tokens.color.border ?? "#dddddd"});
   border-radius: ${tokens.radius?.lg ?? "8px"};
-  box-shadow: ${tokens.shadow?.sm ?? "0 18px 50px rgba(0, 0, 0, 0.06)"};
+  box-shadow: ${tokens.shadow?.md ?? "0 22px 56px rgba(23, 19, 15, 0.12)"};
   background: var(--wp--preset--color--surface, ${tokens.color.surface ?? "#ffffff"});
   margin-left: auto;
   margin-right: auto;
-  margin-top: var(--wp--preset--spacing--md);
-  margin-bottom: var(--wp--preset--spacing--lg);
+  margin-top: 0;
+  margin-bottom: var(--wp--preset--spacing--xl);
   max-width: var(--wp--style--global--wide-size, ${tokens.layout.wideSize});
   overflow: hidden;
   padding: 0;
@@ -379,14 +467,14 @@ function renderBaseCss(blueprint: Blueprint): string {
 
 .blocksmith-hero-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.12fr) minmax(16rem, 0.92fr) minmax(14rem, 0.52fr);
-  min-height: 36rem;
+  grid-template-columns: minmax(0, 1.08fr) minmax(17rem, 0.94fr) minmax(15rem, 0.58fr);
+  min-height: 38rem;
 }
 
 .blocksmith-hero-copy {
   align-self: center;
   min-width: 0;
-  padding: var(--wp--preset--spacing--lg);
+  padding: var(--wp--preset--spacing--xl) var(--wp--preset--spacing--lg);
 }
 
 .blocksmith-hero-art {
@@ -413,18 +501,20 @@ function renderBaseCss(blueprint: Blueprint): string {
 }
 
 .blocksmith-hero .wp-block-buttons {
-  margin-top: var(--wp--preset--spacing--md);
+  margin-top: var(--wp--preset--spacing--lg);
 }
 
 .blocksmith-hero h1 {
-  font-size: 3.3rem;
+  font-size: 3.65rem;
   letter-spacing: 0;
   line-height: 0.98;
   max-width: none;
+  margin-bottom: 1rem;
 }
 
 .blocksmith-hero p:not(.blocksmith-eyebrow) {
-  font-size: 1.08rem;
+  font-size: 1.13rem;
+  line-height: 1.62;
   max-width: 32rem;
 }
 
@@ -434,7 +524,7 @@ function renderBaseCss(blueprint: Blueprint): string {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: var(--wp--preset--spacing--lg) var(--wp--preset--spacing--md);
+  padding: var(--wp--preset--spacing--xl) var(--wp--preset--spacing--md);
 }
 
 .blocksmith-issue-note h2 {
@@ -477,15 +567,15 @@ function renderBaseCss(blueprint: Blueprint): string {
   margin-left: auto;
   margin-right: auto;
   max-width: 780px;
-  padding-bottom: var(--wp--preset--spacing--lg);
-  padding-top: var(--wp--preset--spacing--lg);
+  padding-bottom: var(--wp--preset--spacing--xl);
+  padding-top: var(--wp--preset--spacing--xl);
 }
 
 .blocksmith-feature-grid {
   margin-left: auto;
   margin-right: auto;
   max-width: var(--wp--style--global--wide-size, ${tokens.layout.wideSize});
-  padding-bottom: var(--wp--preset--spacing--md);
+  padding-bottom: var(--wp--preset--spacing--xl);
   padding-top: 0;
 }
 
@@ -500,6 +590,7 @@ function renderBaseCss(blueprint: Blueprint): string {
   background: var(--wp--preset--color--surface, ${tokens.color.surface ?? "#ffffff"});
   border: 1px solid var(--wp--preset--color--border, ${tokens.color.border ?? "#dddddd"});
   border-radius: ${tokens.radius?.md ?? "4px"};
+  box-shadow: ${tokens.shadow?.sm ?? "0 10px 28px rgba(23, 19, 15, 0.08)"};
   min-height: 100%;
   overflow: hidden;
   padding: var(--wp--preset--spacing--md);
@@ -535,7 +626,7 @@ function renderBaseCss(blueprint: Blueprint): string {
 .blocksmith-card h3 {
   font-size: 2rem;
   line-height: 1;
-  margin-bottom: 0.65rem;
+  margin-bottom: 0.8rem;
   margin-top: 0;
 }
 
@@ -607,8 +698,8 @@ function renderBaseCss(blueprint: Blueprint): string {
   margin-left: auto;
   margin-right: auto;
   max-width: var(--wp--style--global--wide-size, ${tokens.layout.wideSize});
-  padding-bottom: var(--wp--preset--spacing--lg);
-  padding-top: var(--wp--preset--spacing--lg);
+  padding-bottom: var(--wp--preset--spacing--xl);
+  padding-top: var(--wp--preset--spacing--xl);
 }
 
 .blocksmith-section-heading {
@@ -617,7 +708,8 @@ function renderBaseCss(blueprint: Blueprint): string {
   display: flex;
   gap: 0.75rem;
   justify-content: space-between;
-  padding-top: 1rem;
+  margin-bottom: var(--wp--preset--spacing--md);
+  padding-top: 1.15rem;
 }
 
 .blocksmith-section-heading h2 {
@@ -642,13 +734,20 @@ function renderBaseCss(blueprint: Blueprint): string {
 .wp-block-post-template {
   display: grid;
   gap: var(--wp--preset--spacing--md);
-  grid-template-columns: repeat(auto-fit, minmax(10.5rem, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
   list-style: none;
   padding-left: 0;
 }
 
+.wp-block-post-template > li {
+  display: flex;
+}
+
 .blocksmith-post-card {
+  display: flex;
+  flex-direction: column;
   padding: 0;
+  width: 100%;
 }
 
 .blocksmith-post-card-media {
@@ -671,14 +770,72 @@ function renderBaseCss(blueprint: Blueprint): string {
 }
 
 .blocksmith-post-card > *:not(.blocksmith-post-card-media) {
-  margin-left: var(--wp--preset--spacing--sm);
-  margin-right: var(--wp--preset--spacing--sm);
+  margin-left: var(--wp--preset--spacing--md);
+  margin-right: var(--wp--preset--spacing--md);
 }
 
 .blocksmith-post-card h3 {
-  font-size: 1.25rem;
-  line-height: 1.14;
-  margin-top: var(--wp--preset--spacing--sm);
+  font-size: 1.32rem;
+  line-height: 1.12;
+  margin-bottom: 0.55rem;
+  margin-top: var(--wp--preset--spacing--md);
+}
+
+.blocksmith-post-card .wp-block-post-excerpt {
+  margin-bottom: var(--wp--preset--spacing--md);
+}
+
+.blocksmith-post-card .wp-block-post-date {
+  border-top: 1px solid var(--wp--preset--color--border, ${tokens.color.border ?? "#dddddd"});
+  margin-top: auto;
+  padding-bottom: var(--wp--preset--spacing--sm);
+  padding-top: var(--wp--preset--spacing--sm);
+}
+
+.blocksmith-query-empty {
+  border: 1px solid var(--wp--preset--color--border, ${tokens.color.border ?? "#dddddd"});
+  border-radius: ${tokens.radius?.md ?? "4px"};
+  margin-top: var(--wp--preset--spacing--md);
+  padding: var(--wp--preset--spacing--md);
+}
+
+.blocksmith-archive-header,
+.blocksmith-post-header,
+.blocksmith-not-found {
+  border-bottom: 1px solid var(--wp--preset--color--border, ${tokens.color.border ?? "#dddddd"});
+  margin: 0 auto;
+  max-width: var(--wp--style--global--wide-size, ${tokens.layout.wideSize});
+  padding-bottom: var(--wp--preset--spacing--lg);
+  padding-top: var(--wp--preset--spacing--md);
+}
+
+.blocksmith-archive-header h1,
+.blocksmith-post-header h1,
+.blocksmith-not-found h1 {
+  font-size: 3rem;
+  line-height: 1;
+  margin-bottom: 0.75rem;
+  max-width: 820px;
+}
+
+.blocksmith-post-header .wp-block-post-date {
+  color: var(--wp--preset--color--primary, ${tokens.color.primary});
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.wp-block-post-content {
+  margin-bottom: var(--wp--preset--spacing--xl);
+  margin-top: var(--wp--preset--spacing--lg);
+}
+
+.wp-block-post-content p {
+  max-width: var(--wp--style--global--content-size, ${tokens.layout.contentSize});
+}
+
+.blocksmith-query-empty h2 {
+  font-size: 1.5rem;
+  margin-top: 0;
 }
 
 .blocksmith-editor-note {
@@ -773,6 +930,10 @@ function renderBaseCss(blueprint: Blueprint): string {
 }
 
 @media (max-width: 980px) {
+  .blocksmith-header {
+    margin-bottom: var(--wp--preset--spacing--md);
+  }
+
   .blocksmith-masthead-row,
   .blocksmith-hero-grid,
   .blocksmith-editor-note,
@@ -786,6 +947,17 @@ function renderBaseCss(blueprint: Blueprint): string {
     text-align: left;
   }
 
+  .blocksmith-masthead-row {
+    gap: var(--wp--preset--spacing--sm);
+    min-height: 0;
+    padding: var(--wp--preset--spacing--md) 0 var(--wp--preset--spacing--sm);
+  }
+
+  .blocksmith-masthead-note {
+    font-size: 0.82rem;
+    padding: 0.8rem 0;
+  }
+
   .blocksmith-site-brand .wp-block-site-title,
   .blocksmith-hero h1 {
     font-size: 2.05rem;
@@ -793,6 +965,15 @@ function renderBaseCss(blueprint: Blueprint): string {
 
   .blocksmith-hero-grid {
     min-height: 0;
+  }
+
+  .blocksmith-hero {
+    margin-bottom: var(--wp--preset--spacing--lg);
+  }
+
+  .blocksmith-hero-copy,
+  .blocksmith-issue-note {
+    padding: var(--wp--preset--spacing--lg) var(--wp--preset--spacing--md);
   }
 
   .blocksmith-hero-art {
@@ -803,6 +984,21 @@ function renderBaseCss(blueprint: Blueprint): string {
 
   .blocksmith-cta {
     grid-template-columns: 1fr;
+  }
+
+  .wp-block-query,
+  .blocksmith-intro,
+  .blocksmith-feature-grid,
+  .wp-block-post-content {
+    padding-bottom: var(--wp--preset--spacing--lg);
+    padding-top: var(--wp--preset--spacing--lg);
+  }
+
+  .blocksmith-archive-header,
+  .blocksmith-post-header,
+  .blocksmith-not-found {
+    padding-bottom: var(--wp--preset--spacing--md);
+    padding-top: var(--wp--preset--spacing--md);
   }
 
   .blocksmith-footer-bottom {
@@ -822,6 +1018,17 @@ function renderBaseCss(blueprint: Blueprint): string {
   .blocksmith-section-heading {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .blocksmith-header-top,
+  .blocksmith-cta,
+  .blocksmith-editor-note {
+    padding-left: var(--wp--preset--spacing--sm);
+    padding-right: var(--wp--preset--spacing--sm);
+  }
+
+  .blocksmith-nav-row {
+    gap: var(--wp--preset--spacing--sm);
   }
 
   .blocksmith-cta h2,
@@ -927,23 +1134,39 @@ foreach ($existing as $post) {
     wp_delete_post($post->ID, true);
 }
 
+$author = get_user_by('login', 'admin');
+$author_id = $author ? (int) $author->ID : 1;
+
 $pages = array(
+    array('title' => 'Regionally Famous Home', 'slug' => 'home', 'content' => '<p>The front page uses the theme front-page.html template.</p>'),
+    array('title' => 'Dispatches', 'slug' => 'dispatches', 'content' => '<p>Browse the Dispatch category archive for the live WordPress loop.</p>'),
     array('title' => 'About Regionally Famous', 'slug' => 'about', 'content' => '<p>Regionally Famous Dispatch is an independent local publication about places, people, and small legends worth remembering.</p>'),
     array('title' => 'Support Us', 'slug' => 'support-us', 'content' => '<p>Reader support keeps the dispatch independent, useful, and rooted in the community.</p>'),
     array('title' => 'Advertise', 'slug' => 'advertise', 'content' => '<p>Reach curious local readers with calm, high-trust sponsorship placements.</p>'),
     array('title' => 'Contact', 'slug' => 'contact', 'content' => '<p>Send story tips, corrections, and neighborhood notes to the editorial desk.</p>'),
     array('title' => 'Subscribe', 'slug' => 'subscribe', 'content' => '<p>Sign up for the weekly dispatch of local stories, recommendations, and field notes.</p>'),
     array('title' => 'Shop', 'slug' => 'shop', 'content' => '<p>Field totes, notebooks, and practical goods for everyday local errands.</p>'),
+    array('title' => 'Privacy Policy', 'slug' => 'privacy-policy', 'content' => '<p>This sample privacy policy exists so the privacy-policy.html template can be verified in Playground.</p>'),
 );
 
+$page_ids = array();
 foreach ($pages as $page) {
-    wp_insert_post(array(
+    $page_id = wp_insert_post(array(
         'post_title' => $page['title'],
         'post_name' => $page['slug'],
         'post_content' => $page['content'],
         'post_status' => 'publish',
         'post_type' => 'page',
+        'post_author' => $author_id,
     ));
+
+    if (!is_wp_error($page_id)) {
+        $page_ids[$page['slug']] = (int) $page_id;
+    }
+}
+
+if (!empty($page_ids['privacy-policy'])) {
+    update_option('wp_page_for_privacy_policy', $page_ids['privacy-policy']);
 }
 
 $category_slugs = array(
@@ -960,35 +1183,60 @@ foreach ($category_slugs as $name => $slug) {
     }
 }
 
+$tag_slugs = array(
+    'Local' => 'local',
+    'Markets' => 'markets',
+    'Cinema' => 'cinema',
+    'Schools' => 'schools',
+    'Music' => 'music',
+    'Food' => 'food',
+);
+
+foreach ($tag_slugs as $name => $slug) {
+    if (!term_exists($slug, 'post_tag')) {
+        wp_insert_term($name, 'post_tag', array('slug' => $slug));
+    }
+}
+
 $stories = array(
     array(
         'title' => 'Market day on 4th Street',
+        'slug' => 'market-day-on-4th-street',
         'excerpt' => 'Radishes, gossip, and the old folding table that anchors Saturday morning.',
-        'category' => 'Dispatch',
+        'categories' => array('Dispatch', 'Place notes'),
+        'tags' => array('Local', 'Markets', 'Food'),
         'date' => '2026-06-18 09:00:00',
     ),
     array(
         'title' => 'An old cinema gets new life',
+        'slug' => 'an-old-cinema-gets-new-life',
         'excerpt' => 'The marquee is lit again, and the neighborhood remembers how to line up.',
-        'category' => 'Place notes',
+        'categories' => array('Dispatch', 'Place notes'),
+        'tags' => array('Local', 'Cinema'),
         'date' => '2026-06-14 09:00:00',
     ),
     array(
         'title' => 'A teacher with the long view',
+        'slug' => 'a-teacher-with-the-long-view',
         'excerpt' => 'A careful conversation about classrooms, corner stores, and civic patience.',
-        'category' => 'People features',
+        'categories' => array('Dispatch', 'People features'),
+        'tags' => array('Local', 'Schools'),
         'date' => '2026-06-10 09:00:00',
     ),
     array(
         'title' => 'The brass band of Whitman Park',
+        'slug' => 'the-brass-band-of-whitman-park',
         'excerpt' => 'Every Thursday, the park gets loud enough to feel like a promise.',
-        'category' => 'Small legends',
+        'categories' => array('Dispatch', 'Small legends'),
+        'tags' => array('Local', 'Music'),
         'date' => '2026-06-06 09:00:00',
     ),
     array(
         'title' => 'Where to eat right now',
+        'slug' => 'where-to-eat-right-now',
         'excerpt' => 'Five modest counters, one perfect soup, and a dessert worth crossing town for.',
-        'category' => 'Guides',
+        'categories' => array('Dispatch', 'Guides'),
+        'tags' => array('Local', 'Food'),
         'date' => '2026-06-02 09:00:00',
     ),
 );
@@ -996,23 +1244,48 @@ $stories = array(
 foreach ($stories as $story) {
     $post_id = wp_insert_post(array(
         'post_title' => $story['title'],
+        'post_name' => $story['slug'],
         'post_excerpt' => $story['excerpt'],
         'post_content' => '<p>' . $story['excerpt'] . '</p><p>This sample story exists so Blocksmith previews can show real editorial rhythm in WordPress Playground.</p>',
         'post_status' => 'publish',
         'post_type' => 'post',
         'post_date' => $story['date'],
+        'post_author' => $author_id,
     ));
 
     if (!is_wp_error($post_id)) {
-        $term = term_exists($category_slugs[$story['category']] ?? '', 'category');
-        $term_id = is_array($term) ? (int) $term['term_id'] : (int) $term;
-        if ($term_id > 0) {
-            wp_set_post_terms($post_id, array($term_id), 'category');
+        $category_ids = array();
+        foreach ($story['categories'] as $category) {
+            $term = term_exists($category_slugs[$category] ?? '', 'category');
+            $term_id = is_array($term) ? (int) $term['term_id'] : (int) $term;
+            if ($term_id > 0) {
+                $category_ids[] = $term_id;
+            }
+        }
+
+        if (!empty($category_ids)) {
+            wp_set_post_terms($post_id, $category_ids, 'category');
+        }
+
+        $tag_ids = array();
+        foreach ($story['tags'] as $tag) {
+            $term = term_exists($tag_slugs[$tag] ?? '', 'post_tag');
+            $term_id = is_array($term) ? (int) $term['term_id'] : (int) $term;
+            if ($term_id > 0) {
+                $tag_ids[] = $term_id;
+            }
+        }
+
+        if (!empty($tag_ids)) {
+            wp_set_post_terms($post_id, $tag_ids, 'post_tag');
         }
     }
 }
 
-update_option('permalink_structure', '/%postname%/');
-flush_rewrite_rules();
+global $wp_rewrite;
+$wp_rewrite->set_permalink_structure('/story/%postname%/');
+update_option('permalink_structure', '/story/%postname%/');
+flush_rewrite_rules(true);
+wp_cache_flush();
 `;
 }
