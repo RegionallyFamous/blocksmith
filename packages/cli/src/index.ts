@@ -144,7 +144,7 @@ program
     await rm(options.out, { recursive: true, force: true });
     await writeFiles(themeDir, compileResult.files);
     const zipPath = join(options.out, "theme.zip");
-    zipDirectory(themeDir, zipPath);
+    zipDirectory(themeDir, zipPath, compileResult.themeSlug);
     const playgroundBlueprint = options.withWpTools
       ? withWordPressToolPlugins(compileResult.files["playground/blueprint.json"])
       : compileResult.files["playground/blueprint.json"];
@@ -164,7 +164,7 @@ program
     await writeFiles(temp, compileResult.files);
     const out = options.out ?? `dist/${compileResult.themeSlug}.zip`;
     await mkdir(dirname(out), { recursive: true });
-    zipDirectory(temp, out);
+    zipDirectory(temp, out, compileResult.themeSlug);
     console.log(`Packaged ${out}`);
   });
 
@@ -188,9 +188,9 @@ async function writeFiles(root: string, files: Record<string, string>) {
   }
 }
 
-function zipDirectory(dir: string, out: string) {
+function zipDirectory(dir: string, out: string, rootName?: string) {
   const zip = new AdmZip();
-  zip.addLocalFolder(dir);
+  zip.addLocalFolder(dir, rootName);
   zip.writeZip(out);
 }
 
