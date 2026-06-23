@@ -21,6 +21,60 @@ assets:
     license: AI-generated; human review required before public release
     author: OpenAI Imagegen
     generated: true
+  - path: assets/fonts/fraunces-700.ttf
+    source: assets/fonts/fraunces-700.ttf
+    role: font
+    license: Open Font License via Google Fonts
+    author: Undercase Type
+    fontFamily: Fraunces
+    fontWeight: "700"
+    fontStyle: normal
+    fontDisplay: swap
+  - path: assets/fonts/fraunces-800.ttf
+    source: assets/fonts/fraunces-800.ttf
+    role: font
+    license: Open Font License via Google Fonts
+    author: Undercase Type
+    fontFamily: Fraunces
+    fontWeight: "800"
+    fontStyle: normal
+    fontDisplay: swap
+  - path: assets/fonts/fraunces-900.ttf
+    source: assets/fonts/fraunces-900.ttf
+    role: font
+    license: Open Font License via Google Fonts
+    author: Undercase Type
+    fontFamily: Fraunces
+    fontWeight: "900"
+    fontStyle: normal
+    fontDisplay: swap
+  - path: assets/fonts/source-sans-3-400.ttf
+    source: assets/fonts/source-sans-3-400.ttf
+    role: font
+    license: Open Font License via Google Fonts
+    author: Adobe
+    fontFamily: Source Sans 3
+    fontWeight: "400"
+    fontStyle: normal
+    fontDisplay: swap
+  - path: assets/fonts/source-sans-3-700.ttf
+    source: assets/fonts/source-sans-3-700.ttf
+    role: font
+    license: Open Font License via Google Fonts
+    author: Adobe
+    fontFamily: Source Sans 3
+    fontWeight: "700"
+    fontStyle: normal
+    fontDisplay: swap
+  - path: assets/fonts/source-sans-3-900.ttf
+    source: assets/fonts/source-sans-3-900.ttf
+    role: font
+    license: Open Font License via Google Fonts
+    author: Adobe
+    fontFamily: Source Sans 3
+    fontWeight: "900"
+    fontStyle: normal
+    fontDisplay: swap
 tokens:
   color:
     base: "#fffdf7"
@@ -36,8 +90,8 @@ tokens:
     buttonText: "#fffdf7"
     focus: "#245f68"
   typography:
-    bodyFont: "Inter, sans-serif"
-    headingFont: "Georgia, serif"
+    bodyFont: "\"Source Sans 3\", sans-serif"
+    headingFont: "Fraunces, Georgia, serif"
     scale:
       small: "0.875rem"
       base: "1rem"
@@ -67,7 +121,7 @@ templates:
         text: "Coffee steam, bakery windows, and the first conversations of the day: notes from a slow walk through the old block."
         cta:
           label: "Read the dispatch"
-          url: "#latest"
+          url: "/category/dispatch/"
       - kind: featureGrid
         items:
           - title: "Corner stores still matter."
@@ -86,12 +140,12 @@ templates:
         text: "This publication is a record of our region in real time. Thank you for reading, sharing, and showing up for where you live."
         cta:
           label: "Learn more about us"
-          url: "#about"
+          url: "/about/"
       - kind: ctaBand
         title: "Good stories in your inbox."
         text: "A weekly dispatch of local stories, recommendations, and behind-the-scenes notes from our editors."
         cta:
           label: "Subscribe"
-          url: "#subscribe"
+          url: "/subscribe/"
       - kind: part
         ref: footer

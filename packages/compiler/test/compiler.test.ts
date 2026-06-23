@@ -19,5 +19,14 @@ describe("compileBlueprint", () => {
       expect(validateThemeOutput(result.files, blueprint).ok).toBe(true);
     });
   }
-});
 
+  it("uses inherited queries for archive and search templates", () => {
+    const blueprint = parseYaml(readFileSync("examples/regionally-famous.blueprint.yaml", "utf8")) as Blueprint;
+    const result = compileBlueprint(blueprint);
+
+    expect(result.files["patterns/archive-3-postgrid.php"]).toContain('"inherit":true');
+    expect(result.files["patterns/search-3-searchresults.php"]).toContain('"inherit":true');
+    expect(result.files["patterns/index-4-postgrid.php"]).toContain('"inherit":false');
+    expect(result.files["patterns/search-2-archiveheader.php"]).toContain('"type":"search"');
+  });
+});

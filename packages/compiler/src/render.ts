@@ -27,7 +27,7 @@ export function renderPatternFile(args: {
 ${args.content}`;
 }
 
-export function renderSection(section: BlueprintSection, blueprint: Blueprint, context: "template" | "part" | "pattern"): string {
+export function renderSection(section: BlueprintSection, blueprint: Blueprint, context: "template" | "part" | "pattern", options: { template?: string } = {}): string {
   const profile = blueprint.tasteProfile ?? "editorial-clean";
   const variant = section.variant ?? defaultVariantFor(section.kind, profile);
 
@@ -41,7 +41,7 @@ export function renderSection(section: BlueprintSection, blueprint: Blueprint, c
   <div class="blocksmith-site-brand">${block("site-title", { level: 0 })}<p class="blocksmith-dispatch-mark">Dispatch</p></div>
   <p class="blocksmith-masthead-note blocksmith-masthead-note-right">Independent<br>and local<br>since 2026</p>
 </div>`,
-          `<div class="blocksmith-nav-row"><div class="blocksmith-site-nav">${block("navigation", { overlayMenu: "mobile" })}</div><span class="blocksmith-search-label">Search</span></div>`
+          `<div class="blocksmith-nav-row"><div class="blocksmith-site-nav">${navigation()}</div><div class="blocksmith-site-search">${block("search", { label: "Search", showLabel: false, buttonText: "Search", buttonPosition: "button-only" })}</div></div>`
         ].join("\n"),
         { align: "full", className: "blocksmith-header" }
       );
@@ -49,10 +49,10 @@ export function renderSection(section: BlueprintSection, blueprint: Blueprint, c
       return group(
         [
           `<div class="blocksmith-footer-grid">
-  <div class="blocksmith-footer-about">${block("site-title", { level: 0 })}${paragraph(section.text ?? "Independent local publishing with uncommon polish.")}<a href="#">Our story -></a></div>
-  <div><p class="blocksmith-footer-label">Explore</p><a href="#">Dispatches</a><a href="#">Place notes</a><a href="#">People features</a><a href="#">Small legends</a></div>
-  <div><p class="blocksmith-footer-label">Info</p><a href="#">About</a><a href="#">Support us</a><a href="#">Advertise</a><a href="#">Contact</a></div>
-  <div class="blocksmith-footer-card"><p class="blocksmith-footer-label">The field tote</p><p>Everyday notes, library trips, and small errands.</p><a href="#">Shop merch -></a></div>
+  <div class="blocksmith-footer-about">${block("site-title", { level: 0 })}${paragraph(section.text ?? "Independent local publishing with uncommon polish.")}${link("Our story ->", "/about/")}</div>
+  <div><p class="blocksmith-footer-label">Explore</p>${link("Dispatches", "/category/dispatch/")}${link("Place notes", "/category/place-notes/")}${link("People features", "/category/people-features/")}${link("Small legends", "/category/small-legends/")}</div>
+  <div><p class="blocksmith-footer-label">Info</p>${link("About", "/about/")}${link("Support us", "/support-us/")}${link("Advertise", "/advertise/")}${link("Contact", "/contact/")}</div>
+  <div class="blocksmith-footer-card"><p class="blocksmith-footer-label">The field tote</p><p>Everyday notes, library trips, and small errands.</p>${link("Shop merch ->", "/shop/")}</div>
 </div>`,
           `<div class="blocksmith-footer-bottom"><span>Built with WordPress.</span><span>Site by neighbors, not algorithms.</span></div>`
         ].join("\n"),
@@ -82,9 +82,9 @@ export function renderSection(section: BlueprintSection, blueprint: Blueprint, c
         { align: "full", className: "blocksmith-cta" }
       );
     case "postGrid":
-      return postGrid(section);
+      return postGrid(section, { inheritQuery: options.template === "archive" || options.template === "search" });
     case "archiveHeader":
-      return group([block("query-title", { type: "archive" }), block("term-description")].join("\n"), { className: "blocksmith-archive-header" });
+      return archiveHeader(options.template);
     case "postHeader":
       return group([block("post-title", { level: 1 }), block("post-date", { isLink: true })].join("\n"), { className: "blocksmith-post-header", layout: { type: "constrained" } });
     case "featuredImage":
@@ -96,7 +96,7 @@ export function renderSection(section: BlueprintSection, blueprint: Blueprint, c
     case "pagination":
       return block("query-pagination", { layout: { type: "flex", justifyContent: "space-between" } }, `<div class="wp-block-query-pagination">${[block("query-pagination-previous"), block("query-pagination-numbers"), block("query-pagination-next")].join("\n")}</div>`);
     case "searchResults":
-      return postGrid({ ...section, kind: "postGrid", title: section.title ?? "Search results" });
+      return postGrid({ ...section, kind: "postGrid" }, { inheritQuery: true });
     case "notFound":
       return group(
         [heading(section.title ?? "Nothing found", 1, "center"), paragraph(section.text ?? "Try searching for something else.", { align: "center" }), block("search", { label: "Search", showLabel: false, buttonText: "Search" })].join("\n"),
@@ -114,6 +114,8 @@ export function renderSection(section: BlueprintSection, blueprint: Blueprint, c
 
 export function renderThemeJson(blueprint: Blueprint) {
   const tokens = blueprint.tokens;
+  const bodyFontFaces = fontFacesForStack(blueprint, tokens.typography.bodyFont);
+  const headingFontFaces = fontFacesForStack(blueprint, tokens.typography.headingFont);
   const colorPalette = Object.entries(tokens.color)
     .filter((entry): entry is [string, string] => typeof entry[1] === "string")
     .map(([slug, color]) => ({
@@ -145,11 +147,13 @@ export function renderThemeJson(blueprint: Blueprint) {
         fontFamilies: [
           {
             fontFamily: tokens.typography.bodyFont,
+            ...(bodyFontFaces.length ? { fontFace: bodyFontFaces } : {}),
             name: "Body",
             slug: "body"
           },
           {
             fontFamily: tokens.typography.headingFont,
+            ...(headingFontFaces.length ? { fontFace: headingFontFaces } : {}),
             name: "Heading",
             slug: "heading"
           }
@@ -205,6 +209,26 @@ export function renderThemeJson(blueprint: Blueprint) {
   });
 }
 
+function fontFacesForStack(blueprint: Blueprint, fontStack: string) {
+  const fontAssets = blueprint.assets ?? [];
+  const family = fontAssets
+    .filter((asset) => asset.role === "font" && asset.fontFamily)
+    .find((asset) => fontStack.includes(asset.fontFamily ?? ""))?.fontFamily;
+
+  if (!family) {
+    return [];
+  }
+
+  return fontAssets
+    .filter((asset) => asset.role === "font" && asset.fontFamily === family)
+    .map((asset) => ({
+      fontFamily: family,
+      fontStyle: asset.fontStyle ?? "normal",
+      fontWeight: asset.fontWeight ?? "400",
+      src: [`file:./${asset.path}`]
+    }));
+}
+
 export function renderStyleVariation(title: string, blueprint: Blueprint, tokenOverrides: Partial<BlueprintTokens> = {}) {
   const merged: Blueprint = {
     ...blueprint,
@@ -255,11 +279,11 @@ ${[
     <h2>Inside this dispatch</h2>
     <p>${escapeHtml(issueBody)}</p>
     <ul>
-      <li>Place notes</li>
-      <li>People features</li>
-      <li>Small legends</li>
+      <li>${link("Place notes", "/category/place-notes/")}</li>
+      <li>${link("People features", "/category/people-features/")}</li>
+      <li>${link("Small legends", "/category/small-legends/")}</li>
     </ul>
-    <a href="#">View full issue -></a>
+    ${link("View full issue ->", "/category/dispatch/")}
   </aside>
 </div>`,
     { align: "wide", className: "blocksmith-hero" }
@@ -286,6 +310,7 @@ function featureGrid(section: BlueprintSection): string {
 
   const kickers = ["Place notes", "People features", "Small legends"];
   const links = ["Explore places ->", "Meet the people ->", "Read the legends ->"];
+  const urls = ["/category/place-notes/", "/category/people-features/", "/category/small-legends/"];
   const columns = items.slice(0, 3).map((item, index) =>
     column(
       group(
@@ -293,7 +318,7 @@ function featureGrid(section: BlueprintSection): string {
           `<span class="blocksmith-card-kicker">${escapeHtml(kickers[index] ?? "Feature")}</span>`,
           heading(item.title, 3),
           paragraph(item.text ?? ""),
-          `<a class="blocksmith-card-link" href="#">${escapeHtml(links[index] ?? "Read more ->")}</a>`
+          link(links[index] ?? "Read more ->", urls[index] ?? "/", "blocksmith-card-link")
         ].join("\n"),
         { className: `blocksmith-card blocksmith-card-${index + 1}` }
       )
@@ -322,27 +347,43 @@ ${[
   );
 }
 
-function postGrid(section: BlueprintSection): string {
+function archiveHeader(template?: string): string {
+  const type = template === "search" ? "search" : "archive";
+  const children = [block("query-title", { type })];
+
+  if (type === "archive") {
+    children.push(block("term-description"));
+  }
+
+  return group(children.join("\n"), { className: "blocksmith-archive-header" });
+}
+
+function postGrid(section: BlueprintSection, options: { inheritQuery?: boolean } = {}): string {
   const perPage = section.query?.perPage ?? 6;
-  const query = {
-    perPage,
-    pages: 0,
-    offset: 0,
-    postType: section.query?.postType ?? "post",
-    order: section.query?.order ?? "desc",
-    orderBy: section.query?.orderBy ?? "date",
-    author: "",
-    search: "",
-    exclude: [],
-    sticky: "",
-    inherit: false
-  };
+  const query = options.inheritQuery
+    ? {
+        perPage,
+        inherit: true
+      }
+    : {
+        perPage,
+        pages: 0,
+        offset: 0,
+        postType: section.query?.postType ?? "post",
+        order: section.query?.order ?? "desc",
+        orderBy: section.query?.orderBy ?? "date",
+        author: "",
+        search: "",
+        exclude: [],
+        sticky: "",
+        inherit: false
+      };
 
   return block(
     "query",
     { query, displayLayout: { type: "flex", columns: Math.min(5, perPage) } },
     [
-      section.title ? `<div class="blocksmith-section-heading"><span aria-hidden="true">+</span>${heading(section.title, 2)}<a href="#">View all dispatches -></a></div>` : "",
+      section.title ? `<div id="latest" class="blocksmith-section-heading"><span aria-hidden="true">+</span>${heading(section.title, 2)}${link("View all dispatches ->", "/category/dispatch/")}</div>` : "",
       block(
         "post-template",
         {},
@@ -401,6 +442,30 @@ function buttons(cta?: { label: string; url: string }): string {
     {},
     `<div class="wp-block-buttons">${block("button", {}, `<div class="wp-block-button"><a class="wp-block-button__link wp-element-button" href="${escapeHtml(cta.url)}">${escapeHtml(cta.label)}</a></div>`)}</div>`
   );
+}
+
+function navigation(): string {
+  return block(
+    "navigation",
+    { overlayMenu: "mobile" },
+    [
+      navigationLink("Dispatches", "/category/dispatch/"),
+      navigationLink("Places", "/category/place-notes/"),
+      navigationLink("People", "/category/people-features/"),
+      navigationLink("Guides", "/category/guides/"),
+      navigationLink("Small Legends", "/category/small-legends/"),
+      navigationLink("About", "/about/")
+    ].join("\n")
+  );
+}
+
+function navigationLink(label: string, url: string): string {
+  return block("navigation-link", { label, type: "custom", url, kind: "custom", isTopLevelLink: true });
+}
+
+function link(label: string, href: string, className?: string): string {
+  const classAttr = className ? ` class="${escapeHtml(className)}"` : "";
+  return `<a${classAttr} href="${escapeHtml(href)}">${escapeHtml(label)}</a>`;
 }
 
 function group(inner: string, attrs: Record<string, unknown> = {}): string {

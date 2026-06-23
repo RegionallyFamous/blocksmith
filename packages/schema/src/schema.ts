@@ -215,10 +215,14 @@ export const blueprintSchema = {
           path: { type: "string" },
           source: { type: "string" },
           license: { type: "string" },
-          role: { enum: ["hero", "texture", "content", "reference"] },
+          role: { enum: ["hero", "texture", "content", "reference", "font"] },
           author: { type: "string" },
           copyright: { type: "string" },
-          generated: { type: "boolean" }
+          generated: { type: "boolean" },
+          fontFamily: { type: "string" },
+          fontWeight: { type: "string" },
+          fontStyle: { enum: ["normal", "italic", "oblique"] },
+          fontDisplay: { enum: ["auto", "block", "swap", "fallback", "optional"] }
         }
       }
     },

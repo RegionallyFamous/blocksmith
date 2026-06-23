@@ -116,10 +116,14 @@ export interface BlueprintAsset {
   path: string;
   source: string;
   license: string;
-  role?: "hero" | "texture" | "content" | "reference";
+  role?: "hero" | "texture" | "content" | "reference" | "font";
   author?: string;
   copyright?: string;
   generated?: boolean;
+  fontFamily?: string;
+  fontWeight?: string;
+  fontStyle?: "normal" | "italic" | "oblique";
+  fontDisplay?: "auto" | "block" | "swap" | "fallback" | "optional";
 }
 
 export interface BlueprintCta {

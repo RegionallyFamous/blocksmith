@@ -52,7 +52,7 @@ export function compileBlueprint(input: Blueprint): CompileResult {
         title: patternTitle,
         slug: patternSlug,
         categories: ["featured"],
-        content: renderSection(section, blueprint, "pattern")
+        content: renderSection(section, blueprint, "pattern", { template: templateSlug })
       });
       templateLines.push(renderPatternRef(patternSlug));
     });
@@ -251,6 +251,7 @@ See resources.json for bundled asset provenance.
 function renderBaseCss(blueprint: Blueprint): string {
   const tokens = blueprint.tokens;
   const heroAsset = (blueprint.assets ?? []).find((asset) => asset.role === "hero");
+  const fontFaces = renderFontFaces(blueprint);
   const heroArtBackground = heroAsset
     ? `background-image:
     linear-gradient(90deg, rgba(255, 253, 247, 0.18), rgba(255, 253, 247, 0)),
@@ -258,7 +259,7 @@ function renderBaseCss(blueprint: Blueprint): string {
     : `background-image:
     radial-gradient(circle at 35% 28%, rgba(182, 63, 45, 0.26), transparent 32%),
     linear-gradient(135deg, rgba(36, 95, 104, 0.34), rgba(241, 230, 210, 0.82));`;
-  return `body {
+  return `${fontFaces}body {
   background:
     linear-gradient(90deg, rgba(182, 63, 45, 0.045) 0 1px, transparent 1px 100%),
     linear-gradient(0deg, rgba(23, 19, 15, 0.03) 0 1px, transparent 1px 100%),
@@ -831,6 +832,37 @@ function renderBaseCss(blueprint: Blueprint): string {
 `;
 }
 
+function renderFontFaces(blueprint: Blueprint): string {
+  const faces = (blueprint.assets ?? [])
+    .filter((asset) => asset.role === "font" && asset.fontFamily)
+    .map((asset) => `@font-face {
+  font-family: "${cssString(asset.fontFamily ?? "")}";
+  src: url("${cssAssetUrl(asset.path)}") format("${fontFormat(asset.path)}");
+  font-weight: ${asset.fontWeight ?? "400"};
+  font-style: ${asset.fontStyle ?? "normal"};
+  font-display: ${asset.fontDisplay ?? "swap"};
+}`);
+
+  return faces.length ? `${faces.join("\n\n")}\n\n` : "";
+}
+
+function cssString(value: string): string {
+  return value.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+}
+
+function fontFormat(path: string): string {
+  if (path.endsWith(".woff2")) {
+    return "woff2";
+  }
+  if (path.endsWith(".woff")) {
+    return "woff";
+  }
+  if (path.endsWith(".ttf")) {
+    return "truetype";
+  }
+  return "opentype";
+}
+
 function cssAssetUrl(themePath: string): string {
   if (themePath.startsWith("assets/")) {
     return `../${themePath.slice("assets/".length)}`;
@@ -895,6 +927,39 @@ foreach ($existing as $post) {
     wp_delete_post($post->ID, true);
 }
 
+$pages = array(
+    array('title' => 'About Regionally Famous', 'slug' => 'about', 'content' => '<p>Regionally Famous Dispatch is an independent local publication about places, people, and small legends worth remembering.</p>'),
+    array('title' => 'Support Us', 'slug' => 'support-us', 'content' => '<p>Reader support keeps the dispatch independent, useful, and rooted in the community.</p>'),
+    array('title' => 'Advertise', 'slug' => 'advertise', 'content' => '<p>Reach curious local readers with calm, high-trust sponsorship placements.</p>'),
+    array('title' => 'Contact', 'slug' => 'contact', 'content' => '<p>Send story tips, corrections, and neighborhood notes to the editorial desk.</p>'),
+    array('title' => 'Subscribe', 'slug' => 'subscribe', 'content' => '<p>Sign up for the weekly dispatch of local stories, recommendations, and field notes.</p>'),
+    array('title' => 'Shop', 'slug' => 'shop', 'content' => '<p>Field totes, notebooks, and practical goods for everyday local errands.</p>'),
+);
+
+foreach ($pages as $page) {
+    wp_insert_post(array(
+        'post_title' => $page['title'],
+        'post_name' => $page['slug'],
+        'post_content' => $page['content'],
+        'post_status' => 'publish',
+        'post_type' => 'page',
+    ));
+}
+
+$category_slugs = array(
+    'Dispatch' => 'dispatch',
+    'Place notes' => 'place-notes',
+    'People features' => 'people-features',
+    'Small legends' => 'small-legends',
+    'Guides' => 'guides',
+);
+
+foreach ($category_slugs as $name => $slug) {
+    if (!term_exists($slug, 'category')) {
+        wp_insert_term($name, 'category', array('slug' => $slug));
+    }
+}
+
 $stories = array(
     array(
         'title' => 'Market day on 4th Street',
@@ -937,6 +1002,17 @@ foreach ($stories as $story) {
         'post_type' => 'post',
         'post_date' => $story['date'],
     ));
+
+    if (!is_wp_error($post_id)) {
+        $term = term_exists($category_slugs[$story['category']] ?? '', 'category');
+        $term_id = is_array($term) ? (int) $term['term_id'] : (int) $term;
+        if ($term_id > 0) {
+            wp_set_post_terms($post_id, array($term_id), 'category');
+        }
+    }
 }
+
+update_option('permalink_structure', '/%postname%/');
+flush_rewrite_rules();
 `;
 }
