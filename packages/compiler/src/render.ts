@@ -52,7 +52,7 @@ export function renderSection(section: BlueprintSection, blueprint: Blueprint, c
   <div class="blocksmith-footer-about">${block("site-title", { level: 0 })}${paragraph(section.text ?? "Independent local publishing with uncommon polish.")}${link("Our story ->", "/about/")}</div>
   <div><p class="blocksmith-footer-label">Explore</p>${link("Dispatches", "/category/dispatch/")}${link("Place notes", "/category/place-notes/")}${link("People features", "/category/people-features/")}${link("Small legends", "/category/small-legends/")}</div>
   <div><p class="blocksmith-footer-label">Info</p>${link("About", "/about/")}${link("Support us", "/support-us/")}${link("Advertise", "/advertise/")}${link("Contact", "/contact/")}</div>
-  <div class="blocksmith-footer-card"><p class="blocksmith-footer-label">The field tote</p><p>Everyday notes, library trips, and small errands.</p>${link("Shop merch ->", "/shop/")}</div>
+  <div class="blocksmith-footer-card"><p class="blocksmith-footer-label">Reader supported</p><p>Local stories stay stronger when neighbors keep them going.</p>${link("Support the dispatch ->", "/support-us/")}</div>
 </div>`,
           `<div class="blocksmith-footer-bottom"><span>Built with WordPress.</span><span>Site by neighbors, not algorithms.</span></div>`
         ].join("\n"),
@@ -82,26 +82,23 @@ export function renderSection(section: BlueprintSection, blueprint: Blueprint, c
         { align: "full", className: "blocksmith-cta" }
       );
     case "postGrid":
-      return postGrid(section, { inheritQuery: isInheritedQueryTemplate(options.template), queryId: queryIdFor(options) });
+      return postGrid(section, { inheritQuery: isInheritedQueryTemplate(options.template), queryId: queryIdFor(options), template: options.template });
     case "archiveHeader":
       return archiveHeader(options.template);
     case "postHeader":
-      return group([block("post-title", { level: 1 }), block("post-date", { isLink: true })].join("\n"), { className: "blocksmith-post-header", layout: { type: "constrained" } });
+      return postHeader(options.template);
     case "featuredImage":
-      return block("post-featured-image", { align: "wide" });
+      return block("post-featured-image", { align: "wide", className: "blocksmith-featured-image" });
     case "postContent":
-      return block("post-content", { layout: { type: "constrained" } });
+      return block("post-content", { className: "blocksmith-post-content", layout: { type: "constrained" } });
     case "comments":
       return block("comments");
     case "pagination":
       return block("query-pagination", { layout: { type: "flex", justifyContent: "space-between" } }, `<div class="wp-block-query-pagination">${[block("query-pagination-previous"), block("query-pagination-numbers"), block("query-pagination-next")].join("\n")}</div>`);
     case "searchResults":
-      return postGrid({ ...section, kind: "postGrid" }, { inheritQuery: true, queryId: queryIdFor(options) });
+      return postGrid({ ...section, kind: "postGrid" }, { inheritQuery: true, queryId: queryIdFor(options), template: options.template });
     case "notFound":
-      return group(
-        [heading(section.title ?? "Nothing found", 1, "center"), paragraph(section.text ?? "Try searching for something else.", { align: "center" }), block("search", { label: "Search", showLabel: false, buttonText: "Search" })].join("\n"),
-        { className: "blocksmith-not-found", layout: { type: "constrained" } }
-      );
+      return notFoundSection(section);
     case "part":
       if (context === "pattern") {
         return "";
@@ -499,11 +496,22 @@ ${[
 
 function archiveHeader(template?: string): string {
   const type = template === "search" ? "search" : "archive";
-  const children = [block("query-title", { type })];
+  const eyebrow = type === "search" ? "Search" : "Archive";
+  const children = [
+    `<p class="blocksmith-template-kicker">${eyebrow}</p>`,
+    block("query-title", { type })
+  ];
 
   if (type === "archive") {
     children.push(block("term-description"));
   }
+
+  children.push(
+    `<div class="blocksmith-archive-tools">
+  <div class="blocksmith-archive-search">${block("search", { label: "Search the archive", showLabel: false, placeholder: "Search dispatches...", buttonText: "Search" })}</div>
+  <div class="blocksmith-topic-links">${topicLinks()}</div>
+</div>`
+  );
 
   return group(children.join("\n"), { className: "blocksmith-archive-header" });
 }
@@ -528,8 +536,52 @@ function queryIdFor(options: { template?: string; sectionIndex?: number }): numb
   return seed + (options.sectionIndex ?? 0) + 1;
 }
 
-function postGrid(section: BlueprintSection, options: { inheritQuery?: boolean; queryId?: number } = {}): string {
+function postHeader(template?: string): string {
+  const isPage = template === "page" || template === "privacy-policy" || template === "page-wide";
+  const meta = isPage
+    ? `<div class="blocksmith-breadcrumbs">${link("Home", "/")}<span>/</span><span>Page</span></div>`
+    : `<div class="blocksmith-breadcrumbs">${link("Home", "/")}<span>/</span>${link("Dispatches", "/category/dispatch/")}</div>
+<div class="blocksmith-post-meta-list">
+  ${block("post-terms", { term: "category", separator: " / " })}
+  ${block("post-date", { isLink: true })}
+  ${block("post-author-name", { isLink: true })}
+</div>
+<div class="blocksmith-post-share"><span>Share</span>${link("Email", "mailto:?subject=Regionally%20Famous%20Dispatch")}${link("Submit a tip", "/contact/")}</div>`;
+
+  const titleStack = [
+    block("post-title", { level: 1 }),
+    isPage ? "" : block("post-excerpt", { showMoreOnNewLine: false, excerptLength: 24 })
+  ].filter(Boolean).join("\n");
+
+  return group(
+    [
+      `<aside class="blocksmith-post-meta-rail">${meta}</aside>`,
+      `<div class="blocksmith-post-title-stack">${titleStack}</div>`
+    ].join("\n"),
+    { className: `blocksmith-post-header${isPage ? " blocksmith-page-header" : ""}`, layout: { type: "constrained" } }
+  );
+}
+
+function notFoundSection(section: BlueprintSection): string {
+  return group(
+    [
+      `<p class="blocksmith-template-kicker">404</p>`,
+      heading(section.title ?? "Nothing found.", 1, "center"),
+      paragraph(section.text ?? "We looked high and low, but couldn't find that page. Let's get you back on track.", { align: "center" }),
+      `<div class="blocksmith-recovery-panel">
+  ${heading("Search the archive", 2)}
+  ${block("search", { label: "Search", showLabel: false, placeholder: "Search stories, topics, people...", buttonText: "Search" })}
+</div>`,
+      `<div class="blocksmith-topic-links blocksmith-topic-links-large">${topicLinks()}</div>`
+    ].join("\n"),
+    { className: "blocksmith-not-found", layout: { type: "constrained" } }
+  );
+}
+
+function postGrid(section: BlueprintSection, options: { inheritQuery?: boolean; queryId?: number; template?: string } = {}): string {
   const perPage = section.query?.perPage ?? 6;
+  const family = queryFamily(options.template);
+  const isSingularRelated = isSingularTemplate(options.template);
   const query = options.inheritQuery
     ? {
         inherit: true
@@ -537,7 +589,7 @@ function postGrid(section: BlueprintSection, options: { inheritQuery?: boolean; 
     : {
         perPage,
         pages: 0,
-        offset: 0,
+        offset: isSingularRelated ? 1 : 0,
         postType: section.query?.postType ?? "post",
         order: section.query?.order ?? "desc",
         orderBy: section.query?.orderBy ?? "date",
@@ -553,7 +605,7 @@ function postGrid(section: BlueprintSection, options: { inheritQuery?: boolean; 
 
   return block(
     "query",
-    { queryId: options.queryId ?? 1, query, tagName: "div", enhancedPagination: true, displayLayout: { type: "flex", columns: Math.min(5, perPage) } },
+    { queryId: options.queryId ?? 1, query, tagName: "div", className: `blocksmith-query blocksmith-query-${family}`, enhancedPagination: true, displayLayout: { type: "flex", columns: Math.min(5, perPage) } },
     [
       section.title ? sectionHeading(section) : "",
       block(
@@ -562,11 +614,12 @@ function postGrid(section: BlueprintSection, options: { inheritQuery?: boolean; 
         group(
           [
             `<div class="blocksmith-post-card-media" aria-hidden="true"></div>`,
+            block("post-terms", { term: "category", separator: " / ", className: "blocksmith-post-card-terms" }),
             block("post-title", { isLink: true, level: 3 }),
             block("post-excerpt", { moreText: "Read more" }),
             block("post-date", { isLink: true })
           ].join("\n"),
-          { className: "blocksmith-post-card" }
+          { className: `blocksmith-post-card blocksmith-post-card-${family}` }
         )
       ),
       block(
@@ -575,14 +628,40 @@ function postGrid(section: BlueprintSection, options: { inheritQuery?: boolean; 
         group(
           [
             heading("Nothing matched this query.", 2),
-            paragraph("Try another search or browse the latest stories.")
+            paragraph("Try another search or browse the most useful sections."),
+            block("search", { label: "Search again", showLabel: false, placeholder: "Search dispatches...", buttonText: "Search" }),
+            `<div class="blocksmith-topic-links">${topicLinks()}</div>`
           ].join("\n"),
           { className: "blocksmith-query-empty" }
         )
       ),
-      block("query-pagination", { layout: { type: "flex", justifyContent: "space-between" } }, [block("query-pagination-previous"), block("query-pagination-numbers"), block("query-pagination-next")].join("\n"))
+      family === "related" ? "" : block("query-pagination", { layout: { type: "flex", justifyContent: "space-between" } }, [block("query-pagination-previous"), block("query-pagination-numbers"), block("query-pagination-next")].join("\n"))
     ].filter(Boolean).join("\n")
   );
+}
+
+function queryFamily(template?: string): "home" | "archive" | "related" {
+  if (!template || template === "front-page" || template === "index") {
+    return "home";
+  }
+  if (inheritedQueryTemplates.has(template)) {
+    return "archive";
+  }
+  return "related";
+}
+
+function isSingularTemplate(template?: string): boolean {
+  return template === "single" || template === "single-post" || template === "singular" || template === "attachment" || template === "embed";
+}
+
+function topicLinks(): string {
+  return [
+    link("Dispatches ->", "/category/dispatch/"),
+    link("Place notes ->", "/category/place-notes/"),
+    link("People ->", "/category/people-features/"),
+    link("Guides ->", "/category/guides/"),
+    link("Small legends ->", "/category/small-legends/")
+  ].join("\n");
 }
 
 function sectionHeading(section: BlueprintSection): string {

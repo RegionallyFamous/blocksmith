@@ -66,3 +66,16 @@ Recommended flow:
 7. Compare the screenshot against the comp and revise compiler rules, section variants, tokens, and blueprint content.
 
 The comp should describe the theme's editorial world while keeping final text, navigation, and content as real HTML. Avoid fake browser chrome, brand marks, watermarks, excessive decoration, and tiny unreadable UI text.
+
+## Route-family comp loop
+
+For production-quality themes, generate comps for the route family, then build those decisions back into WordPress primitives:
+
+- `front-page` or `home`: brand signal, hero, key sections, latest loop, CTA, footer.
+- `archive`, `category`, `tag`, `author`, `date`, `search`: inherited Query Loop, archive title/description, search/filter recovery, pagination, no-results state.
+- `single`: post title, date, author, terms, featured image, post content, comments if enabled, related/latest posts, previous/next affordance.
+- `page`: page title/content, optional sidebar or support module, no fake post metadata.
+- `404`: search block, topic links, latest posts, clear recovery copy.
+- Mobile: masthead compression, card density, readable article measure, tappable controls, footer restraint.
+
+The compiler should never paste the comp as an image. It should translate the comp into deterministic tokens, block markup, theme.json support, section rhythm, and CSS rules that preserve real links, loops, and WordPress editing behavior.

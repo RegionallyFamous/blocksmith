@@ -26,6 +26,40 @@ Text: Use short readable labels where possible: "Regionally Famous", "Local stor
 Constraints: must feel like a complete tasteful homepage layout, not an asset background. Avoid generic blog template, avoid bland beige monotone, avoid purple gradients, avoid stock-photo corporate look, avoid excessive decoration, avoid tiny unreadable UI text, avoid fake browser chrome, no brand logos, no watermark.
 ```
 
+## Regionally Famous route-family comps
+
+Generated with the built-in Imagegen tool and saved as:
+
+- `docs/assets/route-comps/regionally-famous-home.png`
+- `docs/assets/route-comps/regionally-famous-archive.png`
+- `docs/assets/route-comps/regionally-famous-single.png`
+- `docs/assets/route-comps/regionally-famous-page-404.png`
+- `docs/assets/route-comps/regionally-famous-mobile.png`
+
+These comps are design-direction artifacts for the complete theme route family. They are not shipped as page content. The compiler extracts structural decisions from them and rebuilds those decisions with normal WordPress block templates, Query Loop, template parts, post blocks, search blocks, and theme.json tokens.
+
+Prompt pattern:
+
+```text
+Use case: ui-mockup
+Asset type: full-page WordPress block theme route-family design comp
+Primary request: Design the [home/archive/single/page/404/mobile] route for Regionally Famous Dispatch, a polished independent local publication theme. This is a visual direction comp for layout, style, rhythm, density, and taste, not a final screenshot.
+Scene/backdrop: neighborhood editorial publication for local stories, cultural notes, people profiles, place guides, food, small legends, and civic life.
+Style/medium: high-fidelity web design mockup, premium independent newspaper-magazine aesthetic, WordPress block theme plausible, real route-specific publishing UI.
+Composition/framing: show the whole route with working editorial furniture. Preserve WordPress-native intent: inherited archive/search loops, single post article layout, page content, 404 recovery search, related/latest post paths, header and footer.
+Typography: local Google Font pairing suitable for production: high-contrast editorial serif display and clean humanist sans body. Strong hierarchy, no cramped labels.
+Color palette: cream paper base, black ink, brick red accents, muted teal footer/navigation, warm tan panels, restrained white cards.
+Constraints: no fake browser chrome, no watermark, no external brand marks, no one-off random colors, no decorative UI that cannot become real WordPress blocks. Links, loops, search, empty states, and mobile composition must be designed as functional theme surfaces.
+```
+
+Extraction notes from the selected comps:
+
+- Home: publication masthead, image-led hero, denser story cards, editor note, newsletter band, and a weighted footer.
+- Archive/search: archive-specific search and topic recovery, compact metadata, stable card grid, and useful no-results path.
+- Single: article meta rail, excerpt/deck, featured image discipline, readable article measure, related dispatches, and post navigation affordances.
+- Page/404: utility routes still need designed hierarchy, search recovery, category/topic links, and latest-story onward paths.
+- Mobile: smaller masthead, compact archive cards, retained article intent, and footer actions that do not swallow the viewport.
+
 ## Regionally Famous masthead
 
 Generated with the built-in Imagegen tool and saved as `examples/assets/regionally-famous-masthead.jpg`.

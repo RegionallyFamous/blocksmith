@@ -149,6 +149,11 @@ function defaultTemplates(blueprint: Blueprint): Record<string, BlueprintTemplat
     { kind: "postHeader" },
     { kind: "featuredImage" },
     { kind: "postContent" },
+    {
+      kind: "postGrid",
+      title: "Related dispatches",
+      query: { perPage: 4 }
+    },
     { kind: "comments" },
     { kind: "part", ref: "footer" }
   ];
@@ -242,6 +247,15 @@ function defaultTemplates(blueprint: Blueprint): Record<string, BlueprintTemplat
       sections: [
         { kind: "part", ref: "header" },
         { kind: "notFound" },
+        {
+          kind: "postGrid",
+          title: "Latest dispatches",
+          cta: {
+            label: "View more stories ->",
+            url: "/category/dispatch/"
+          },
+          query: { perPage: 4 }
+        },
         { kind: "part", ref: "footer" }
       ]
     }
@@ -307,6 +321,34 @@ add_action(
 \t\t\twp_get_theme()->get( 'Version' )
 \t\t);
 \t}
+);
+
+add_filter(
+\t'term_link',
+\tstatic function ( string $termlink ): string {
+\t\tif ( ! preg_match( '#^(https?:)?//#', $termlink ) && ! str_starts_with( $termlink, '/' ) ) {
+\t\t\treturn home_url( '/' . ltrim( $termlink, '/' ) );
+\t\t}
+
+\t\treturn $termlink;
+\t},
+\t10,
+\t1
+);
+
+add_filter(
+\t'category_link',
+\tstatic function ( string $link, int $term_id ): string {
+\t\t$term = get_term( $term_id, 'category' );
+
+\t\tif ( $term instanceof WP_Term ) {
+\t\t\treturn home_url( '/category/' . $term->slug . '/' );
+\t\t}
+
+\t\treturn $link;
+\t},
+\t10,
+\t2
 );
 `;
 }
@@ -1034,6 +1076,497 @@ function renderBaseCss(blueprint: Blueprint): string {
   .blocksmith-cta h2,
   .blocksmith-note-quote h2 {
     font-size: 2rem;
+  }
+}
+
+/* Route-family polish derived from the Regionally Famous Imagegen comps. */
+.blocksmith-template-kicker,
+.blocksmith-breadcrumbs,
+.blocksmith-post-card-terms,
+.blocksmith-post-meta-list,
+.blocksmith-post-share {
+  color: var(--wp--preset--color--primary, ${tokens.color.primary});
+  font-size: 0.76rem;
+  font-weight: 900;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.blocksmith-header {
+  background: rgba(255, 253, 247, 0.94);
+  box-shadow: 0 1px 0 rgba(23, 19, 15, 0.08);
+}
+
+.blocksmith-header-top {
+  background: var(--wp--preset--color--secondary, ${tokens.color.secondary ?? tokens.color.primary});
+}
+
+.blocksmith-masthead-row {
+  min-height: 9.2rem;
+  padding-bottom: 1rem;
+  padding-top: 2.4rem;
+}
+
+.blocksmith-site-brand .wp-block-site-title {
+  color: var(--wp--preset--color--contrast, ${tokens.color.contrast});
+  font-size: 4rem;
+}
+
+.blocksmith-dispatch-mark {
+  color: var(--wp--preset--color--primary, ${tokens.color.primary});
+}
+
+.blocksmith-nav-row {
+  border-top: 1px solid var(--wp--preset--color--border, ${tokens.color.border ?? "#dddddd"});
+}
+
+.blocksmith-site-nav .wp-block-navigation-item__content {
+  padding: 0.25rem 0;
+}
+
+.blocksmith-site-search .wp-block-search__inside-wrapper,
+.blocksmith-archive-search .wp-block-search__inside-wrapper,
+.blocksmith-recovery-panel .wp-block-search__inside-wrapper,
+.blocksmith-query-empty .wp-block-search__inside-wrapper {
+  border: 1px solid var(--wp--preset--color--border, ${tokens.color.border ?? "#dddddd"});
+  border-radius: ${tokens.radius?.sm ?? "3px"};
+  overflow: hidden;
+}
+
+.blocksmith-site-search .wp-block-search__button,
+.blocksmith-archive-search .wp-block-search__button,
+.blocksmith-recovery-panel .wp-block-search__button,
+.blocksmith-query-empty .wp-block-search__button {
+  border-radius: 0;
+  margin-left: 0;
+}
+
+.blocksmith-archive-header {
+  display: grid;
+  gap: var(--wp--preset--spacing--md);
+  grid-template-columns: minmax(0, 1.35fr) minmax(18rem, 0.65fr);
+  padding-bottom: var(--wp--preset--spacing--lg);
+  padding-top: var(--wp--preset--spacing--lg);
+}
+
+.blocksmith-archive-header .blocksmith-template-kicker,
+.blocksmith-archive-header h1,
+.blocksmith-archive-header .wp-block-term-description {
+  grid-column: 1;
+}
+
+.blocksmith-archive-header h1 {
+  font-size: 4rem;
+  margin: 0;
+}
+
+.blocksmith-archive-header .wp-block-term-description {
+  max-width: 38rem;
+}
+
+.blocksmith-archive-tools {
+  align-self: end;
+  border: 1px solid var(--wp--preset--color--border, ${tokens.color.border ?? "#dddddd"});
+  border-radius: ${tokens.radius?.md ?? "6px"};
+  display: grid;
+  gap: var(--wp--preset--spacing--sm);
+  grid-column: 2;
+  grid-row: 1 / span 3;
+  padding: var(--wp--preset--spacing--md);
+}
+
+.blocksmith-topic-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.blocksmith-topic-links a {
+  border: 1px solid var(--wp--preset--color--border, ${tokens.color.border ?? "#dddddd"});
+  border-radius: ${tokens.radius?.sm ?? "3px"};
+  color: var(--wp--preset--color--contrast, ${tokens.color.contrast});
+  font-size: 0.78rem;
+  font-weight: 800;
+  padding: 0.42rem 0.58rem;
+  text-decoration: none;
+}
+
+.blocksmith-topic-links-large {
+  justify-content: center;
+  margin-top: var(--wp--preset--spacing--md);
+}
+
+.blocksmith-post-header {
+  display: grid;
+  gap: var(--wp--preset--spacing--lg);
+  grid-template-columns: minmax(12rem, 0.36fr) minmax(0, 1fr);
+  padding-bottom: var(--wp--preset--spacing--lg);
+  padding-top: var(--wp--preset--spacing--lg);
+}
+
+.blocksmith-post-meta-rail {
+  border-right: 1px solid var(--wp--preset--color--border, ${tokens.color.border ?? "#dddddd"});
+  display: flex;
+  flex-direction: column;
+  gap: var(--wp--preset--spacing--sm);
+  padding-right: var(--wp--preset--spacing--md);
+}
+
+.blocksmith-breadcrumbs {
+  color: var(--wp--preset--color--contrast, ${tokens.color.contrast});
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.42rem;
+}
+
+.blocksmith-post-meta-list {
+  display: grid;
+  gap: 0.42rem;
+}
+
+.blocksmith-post-meta-list a,
+.blocksmith-post-share a,
+.blocksmith-breadcrumbs a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.blocksmith-post-share {
+  border-top: 1px solid var(--wp--preset--color--border, ${tokens.color.border ?? "#dddddd"});
+  display: grid;
+  gap: 0.5rem;
+  margin-top: auto;
+  padding-top: var(--wp--preset--spacing--sm);
+}
+
+.blocksmith-post-title-stack h1 {
+  font-size: 4.45rem;
+  line-height: 0.98;
+  margin: 0 0 var(--wp--preset--spacing--sm);
+}
+
+.blocksmith-post-title-stack .wp-block-post-excerpt {
+  font-size: 1.25rem;
+  line-height: 1.52;
+  margin: 0;
+  max-width: 42rem;
+}
+
+.blocksmith-page-header {
+  grid-template-columns: minmax(8rem, 0.26fr) minmax(0, 1fr);
+}
+
+.blocksmith-featured-image {
+  margin-bottom: var(--wp--preset--spacing--lg);
+  margin-top: 0;
+  max-width: var(--wp--style--global--wide-size, ${tokens.layout.wideSize});
+}
+
+.blocksmith-featured-image img {
+  border: 1px solid var(--wp--preset--color--border, ${tokens.color.border ?? "#dddddd"});
+  border-radius: ${tokens.radius?.md ?? "6px"};
+  max-height: 34rem;
+  object-fit: cover;
+  width: 100%;
+}
+
+.blocksmith-post-content {
+  font-size: 1.08rem;
+}
+
+.blocksmith-post-content > :first-child::first-letter {
+  background: var(--wp--preset--color--primary, ${tokens.color.primary});
+  color: var(--wp--preset--color--base, ${tokens.color.base});
+  float: left;
+  font-family: var(--wp--preset--font-family--heading);
+  font-size: 3.2rem;
+  line-height: 0.88;
+  margin: 0.28rem 0.62rem 0 0;
+  padding: 0.24rem 0.42rem 0.18rem;
+}
+
+.blocksmith-query {
+  padding-top: var(--wp--preset--spacing--lg);
+}
+
+.blocksmith-query .wp-block-post-template {
+  gap: var(--wp--preset--spacing--md);
+}
+
+.blocksmith-query-home .wp-block-post-template {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.blocksmith-query-archive .wp-block-post-template {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.blocksmith-query-related .wp-block-post-template {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.blocksmith-post-card {
+  border-radius: ${tokens.radius?.md ?? "6px"};
+  box-shadow: none;
+}
+
+.blocksmith-post-card-media {
+  min-height: 10rem;
+}
+
+.blocksmith-post-card-archive .blocksmith-post-card-media {
+  min-height: 11rem;
+}
+
+.blocksmith-post-card-related .blocksmith-post-card-media {
+  min-height: 8rem;
+}
+
+.blocksmith-post-card-terms {
+  margin-bottom: 0;
+  margin-top: var(--wp--preset--spacing--sm);
+}
+
+.blocksmith-post-card-terms a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.blocksmith-post-card h3 {
+  font-size: 1.42rem;
+  line-height: 1.08;
+  margin-top: 0.45rem;
+}
+
+.blocksmith-post-card-related h3 {
+  font-size: 1.18rem;
+}
+
+.blocksmith-query-empty,
+.blocksmith-recovery-panel {
+  background: rgba(255, 255, 255, 0.52);
+  border: 1px solid var(--wp--preset--color--border, ${tokens.color.border ?? "#dddddd"});
+  border-radius: ${tokens.radius?.md ?? "6px"};
+  padding: var(--wp--preset--spacing--md);
+}
+
+.blocksmith-not-found {
+  text-align: center;
+}
+
+.blocksmith-not-found h1 {
+  font-size: 4.25rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.blocksmith-recovery-panel {
+  margin: var(--wp--preset--spacing--lg) auto 0;
+  max-width: 58rem;
+  text-align: left;
+}
+
+.blocksmith-recovery-panel h2 {
+  font-size: 1.55rem;
+  margin-top: 0;
+}
+
+.blocksmith-footer {
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0)),
+    var(--wp--preset--color--secondary, ${tokens.color.secondary ?? tokens.color.primary});
+  border-top: 0;
+  color: var(--wp--preset--color--base, ${tokens.color.base});
+  padding-bottom: var(--wp--preset--spacing--md);
+}
+
+.blocksmith-footer a,
+.blocksmith-footer p,
+.blocksmith-footer .wp-block-site-title,
+.blocksmith-footer-bottom,
+.blocksmith-footer-label {
+  color: inherit;
+}
+
+.blocksmith-footer-card {
+  background: rgba(255, 253, 247, 0.1);
+  border: 1px solid rgba(255, 253, 247, 0.22);
+}
+
+.blocksmith-footer-bottom {
+  border-top-color: rgba(255, 253, 247, 0.22);
+}
+
+@media (max-width: 980px) {
+  .blocksmith-archive-header,
+  .blocksmith-post-header,
+  .blocksmith-page-header {
+    grid-template-columns: 1fr;
+  }
+
+  .blocksmith-archive-header .blocksmith-template-kicker,
+  .blocksmith-archive-header h1,
+  .blocksmith-archive-header .wp-block-term-description,
+  .blocksmith-archive-tools {
+    grid-column: auto;
+    grid-row: auto;
+  }
+
+  .blocksmith-post-meta-rail {
+    border-bottom: 1px solid var(--wp--preset--color--border, ${tokens.color.border ?? "#dddddd"});
+    border-right: 0;
+    padding-bottom: var(--wp--preset--spacing--sm);
+    padding-right: 0;
+  }
+
+  .blocksmith-post-title-stack h1,
+  .blocksmith-archive-header h1,
+  .blocksmith-not-found h1 {
+    font-size: 3rem;
+  }
+
+  .blocksmith-query-home .wp-block-post-template,
+  .blocksmith-query-archive .wp-block-post-template,
+  .blocksmith-query-related .wp-block-post-template {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .wp-site-blocks {
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .wp-site-blocks > *:not(.alignfull),
+  .blocksmith-masthead-row,
+  .blocksmith-nav-row,
+  .blocksmith-hero,
+  .blocksmith-feature-grid,
+  .blocksmith-intro,
+  .wp-block-query,
+  .blocksmith-archive-header,
+  .blocksmith-post-header,
+  .blocksmith-not-found,
+  .blocksmith-featured-image,
+  .blocksmith-post-content,
+  .wp-block-comments {
+    margin-left: 1rem;
+    margin-right: 1rem;
+  }
+
+  .blocksmith-header-top {
+    display: none;
+  }
+
+  .blocksmith-masthead-row {
+    border-bottom: 1px solid var(--wp--preset--color--border, ${tokens.color.border ?? "#dddddd"});
+    display: block;
+    padding: 0.85rem 0;
+    text-align: center;
+  }
+
+  .blocksmith-masthead-note {
+    display: none;
+  }
+
+  .blocksmith-site-brand,
+  .blocksmith-masthead-note-right {
+    text-align: center;
+  }
+
+  .blocksmith-site-brand .wp-block-site-title {
+    font-size: 1.72rem;
+    line-height: 0.95;
+  }
+
+  .blocksmith-dispatch-mark {
+    font-size: 0.72rem;
+    margin-top: 0.28rem;
+  }
+
+  .blocksmith-nav-row {
+    align-items: center;
+    flex-direction: row;
+    gap: 0.65rem;
+    padding: 0.62rem 0 0.72rem;
+  }
+
+  .blocksmith-site-nav {
+    flex: 1;
+  }
+
+  .blocksmith-site-search {
+    flex: 0 0 auto;
+  }
+
+  .blocksmith-hero-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .blocksmith-hero-copy {
+    padding: var(--wp--preset--spacing--md);
+  }
+
+  .blocksmith-hero h1 {
+    font-size: 2.35rem;
+  }
+
+  .blocksmith-hero-art {
+    min-height: 16rem;
+    order: -1;
+  }
+
+  .blocksmith-issue-note {
+    padding: var(--wp--preset--spacing--md);
+  }
+
+  .blocksmith-feature-grid .wp-block-columns,
+  .blocksmith-query-home .wp-block-post-template,
+  .blocksmith-query-related .wp-block-post-template {
+    grid-template-columns: 1fr;
+  }
+
+  .blocksmith-query-archive .wp-block-post-template {
+    grid-template-columns: 1fr;
+  }
+
+  .blocksmith-query-archive .blocksmith-post-card {
+    display: grid;
+    grid-template-columns: 8rem minmax(0, 1fr);
+  }
+
+  .blocksmith-query-archive .blocksmith-post-card-media {
+    grid-row: 1 / span 4;
+    min-height: 100%;
+  }
+
+  .blocksmith-query-archive .blocksmith-post-card > *:not(.blocksmith-post-card-media) {
+    margin-left: var(--wp--preset--spacing--sm);
+    margin-right: var(--wp--preset--spacing--sm);
+  }
+
+  .blocksmith-query-archive .blocksmith-post-card h3 {
+    font-size: 1.18rem;
+  }
+
+  .blocksmith-post-title-stack h1,
+  .blocksmith-archive-header h1,
+  .blocksmith-not-found h1 {
+    font-size: 2.35rem;
+  }
+
+  .blocksmith-post-content {
+    font-size: 1rem;
+  }
+
+  .blocksmith-post-content > :first-child::first-letter {
+    font-size: 2.35rem;
+  }
+
+  .blocksmith-footer {
+    padding-left: 1rem;
+    padding-right: 1rem;
   }
 }
 `;
