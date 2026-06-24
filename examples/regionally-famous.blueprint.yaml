@@ -63,6 +63,30 @@ assets:
     license: AI-generated; human review required before public release
     author: OpenAI Imagegen
     generated: true
+  - path: assets/images/regionally-famous/header-bird.jpg
+    source: assets/images/regionally-famous/header-bird.jpg
+    role: content
+    license: AI-generated; human review required before public release
+    author: OpenAI Imagegen
+    generated: true
+  - path: assets/images/regionally-famous/editor-portrait.jpg
+    source: assets/images/regionally-famous/editor-portrait.jpg
+    role: content
+    license: AI-generated; human review required before public release
+    author: OpenAI Imagegen
+    generated: true
+  - path: assets/images/regionally-famous/town-sketch.jpg
+    source: assets/images/regionally-famous/town-sketch.jpg
+    role: content
+    license: AI-generated; human review required before public release
+    author: OpenAI Imagegen
+    generated: true
+  - path: assets/images/regionally-famous/newsletter-art.jpg
+    source: assets/images/regionally-famous/newsletter-art.jpg
+    role: content
+    license: AI-generated; human review required before public release
+    author: OpenAI Imagegen
+    generated: true
   - path: assets/images/regionally-famous-masthead.jpg
     source: assets/regionally-famous-masthead.jpg
     role: reference
@@ -172,11 +196,11 @@ templates:
         ref: header
       - kind: hero
         variant: editorial
-        eyebrow: "Dispatch"
-        title: "The morning belongs to the neighborhood."
-        text: "Coffee steam, bakery windows, and the first conversations of the day: notes from a slow walk through the old block."
+        eyebrow: "Feature dispatch"
+        title: "The old dance hall still holding Saturday nights"
+        text: "Inside the century-old hall where two-stepping, live country, and community memory never went out of style."
         cta:
-          label: "Read the dispatch"
+          label: "Read the story"
           url: "/category/dispatch/"
       - kind: featureGrid
         items:
@@ -192,7 +216,7 @@ templates:
           label: "View all dispatches ->"
           url: "/category/dispatch/"
         query:
-          perPage: 6
+          perPage: 4
       - kind: intro
         variant: editor-note
         title: "We write about the places we love and the people who make them worth staying for."

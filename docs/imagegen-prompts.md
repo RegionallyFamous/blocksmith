@@ -74,6 +74,10 @@ Saved assets:
 - `story-food-guide.jpg`: featured image for "Where to Eat After the Late Show".
 - `archive-map.jpg`: archive/search sidecar artwork.
 - `not-found-lantern.jpg`: 404 recovery artwork.
+- `header-bird.jpg`: masthead ornament used beside the wordmark.
+- `editor-portrait.jpg`: editor-note and article-author portrait artwork.
+- `town-sketch.jpg`: homepage collage, archive/story support art, and additional seeded story media.
+- `newsletter-art.jpg`: illustrated newsletter-band background.
 
 Prompt pattern:
 
@@ -90,7 +94,7 @@ Color palette: cream paper, black ink, brick red, muted teal, warm tan, restrain
 Constraints: no readable text, no brand marks, no watermark, no distorted hands/faces, no fake UI, no random colors outside the theme palette.
 ```
 
-Production rule: if an Imagegen route comp shows photography, illustration, or map texture as a structural part of the layout, generate or supply that asset separately and wire it into WordPress-native surfaces. Use `core/post-featured-image` for post media, imported Media Library attachments for seeded demos, and CSS backgrounds only for decorative route art that is not content.
+Production rule: if an Imagegen route comp shows photography, illustration, ornament, portraiture, or map texture as a structural part of the layout, generate or supply that asset separately and wire it into WordPress-native surfaces. Use `core/post-featured-image` for post media, imported Media Library attachments for seeded demos, and CSS backgrounds only for decorative route art that is not content. Route-comp fidelity requires both structural markup and asset parity: if the comp has a masthead ornament, editor portrait, illustrated newsletter band, or collage strip, those pieces must exist as real optimized assets in the theme.
 
 ## Regionally Famous masthead
 

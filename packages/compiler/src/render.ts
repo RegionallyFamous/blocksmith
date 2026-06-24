@@ -32,19 +32,22 @@ export function renderSection(section: BlueprintSection, blueprint: Blueprint, c
   const variant = section.variant ?? defaultVariantFor(section.kind, profile);
 
   switch (section.kind) {
-    case "header":
+    case "header": {
+      const wordmarkBase = blueprint.metadata.name.replace(/\s+Dispatch$/i, "");
       return group(
         [
-          `<div class="blocksmith-header-top"><span>Support local publishing</span><span>A noteworthy publication</span></div>`,
+          `<div class="blocksmith-header-top blocksmith-topbar"><span>Tuesday, June 23, 2026</span><span>About&nbsp;&nbsp; Newsletter&nbsp;&nbsp; Advertise&nbsp;&nbsp; Support</span></div>`,
           `<div class="blocksmith-masthead-row">
-  <p class="blocksmith-masthead-note">Local stories<br>from here<br>to everywhere</p>
-  <div class="blocksmith-site-brand">${block("site-title", { level: 0 })}<p class="blocksmith-dispatch-mark">Dispatch</p></div>
-  <p class="blocksmith-masthead-note blocksmith-masthead-note-right">Independent<br>and local<br>since 2026</p>
+  <p class="blocksmith-masthead-note">Local stories.<br>Lasting impressions.<br>Regionally famous.</p>
+  <a class="blocksmith-wordmark" href="/"><span>${escapeHtml(wordmarkBase)}</span><strong>Dispatch</strong><em>Neighborhood stories. Cultural notes. Local legends.</em></a>
+  <div class="blocksmith-site-brand-native">${block("site-title", { level: 0 })}</div>
+  <div class="blocksmith-masthead-ornament"><div class="blocksmith-header-bird" aria-hidden="true"></div><p>A modern<br>publication<br>rooted here.</p></div>
 </div>`,
           `<div class="blocksmith-nav-row"><div class="blocksmith-site-nav">${navigation()}</div><div class="blocksmith-site-search">${block("search", { label: "Search", showLabel: false, buttonText: "Search", buttonPosition: "button-only" })}</div></div>`
         ].join("\n"),
         { align: "full", className: "blocksmith-header" }
       );
+    }
     case "footer":
       return group(
         [
@@ -75,7 +78,7 @@ export function renderSection(section: BlueprintSection, blueprint: Blueprint, c
     case "ctaBand":
       return group(
         [
-          `<div class="blocksmith-cta-icon" aria-hidden="true"></div>`,
+          `<div class="blocksmith-cta-icon blocksmith-newsletter-art" aria-hidden="true"></div>`,
           `<div class="blocksmith-cta-copy">${heading(section.title ?? "Good stories in your inbox.", 2)}${paragraph(section.text ?? "A weekly dispatch of local stories and behind-the-scenes notes.")}</div>`,
           `<div class="blocksmith-cta-action">${buttons(section.cta)}</div>`
         ].join("\n"),
@@ -90,7 +93,7 @@ export function renderSection(section: BlueprintSection, blueprint: Blueprint, c
     case "featuredImage":
       return block("post-featured-image", { align: "wide", className: "blocksmith-featured-image" });
     case "postContent":
-      return block("post-content", { className: "blocksmith-post-content", layout: { type: "constrained" } });
+      return postContent(options.template);
     case "comments":
       return block("comments");
     case "pagination":
@@ -415,25 +418,19 @@ ${[
     );
   }
 
-  const issueTitle = section.eyebrow ?? "Issue 01";
-  const issueBody = text.length > 134 ? `${text.slice(0, 131)}...` : text;
   return group(
     `<div class="blocksmith-hero-grid">
   <div class="blocksmith-hero-copy">${inner}</div>
   <div class="blocksmith-hero-art" aria-hidden="true"><span>Field guide</span></div>
-  <aside class="blocksmith-issue-note" aria-label="Issue highlights">
-    <p class="blocksmith-mini-label">${escapeHtml(issueTitle)}</p>
-    <h2>Inside this dispatch</h2>
-    <p>${escapeHtml(issueBody)}</p>
-    <ul>
-      <li>${link("Place notes", "/category/place-notes/")}</li>
-      <li>${link("People features", "/category/people-features/")}</li>
-      <li>${link("Small legends", "/category/small-legends/")}</li>
-    </ul>
-    ${link("View full issue ->", "/category/dispatch/")}
-  </aside>
 </div>`,
     { align: "wide", className: "blocksmith-hero" }
+  ) + group(
+    `<div class="blocksmith-home-collage">
+  <div class="blocksmith-collage-map" aria-hidden="true"></div>
+  <div class="blocksmith-collage-quote"><span aria-hidden="true">~</span><p>We report what makes a place itself.<br>Not trends. Not takes. Just truth, told well.</p><strong>RFD</strong></div>
+  <div class="blocksmith-collage-sketch" aria-hidden="true"></div>
+</div>`,
+    { align: "wide", className: "blocksmith-home-collage-wrap" }
   );
 }
 
@@ -441,8 +438,8 @@ function editorNote(section: BlueprintSection): string {
   return group(
     [
       `<div class="blocksmith-note-mark" aria-hidden="true"></div>`,
-      `<div class="blocksmith-note-quote">${heading(section.title ?? "Editor's note", 2)}${paragraph(section.text ?? "A short editorial beat gives the page a humane pause before the final call to action.")}</div>`,
-      `<div class="blocksmith-note-aside"><p>This publication is a record of our region in real time.</p>${section.cta ? buttons(section.cta) : ""}</div>`
+      `<div class="blocksmith-note-quote"><p class="blocksmith-mini-label">A note from the editor</p>${heading(section.title ?? "Editor's note", 2)}${paragraph(section.text ?? "A short editorial beat gives the page a humane pause before the final call to action.")}${section.cta ? link(section.cta.label + " ->", section.cta.url, "blocksmith-inline-action") : ""}</div>`,
+      `<div class="blocksmith-note-aside" aria-hidden="true"><span>RFD</span></div>`
     ].join("\n"),
     { align: "full", className: "blocksmith-editor-note" }
   );
@@ -565,6 +562,34 @@ function postHeader(template?: string): string {
   );
 }
 
+function postContent(template?: string): string {
+  const content = block("post-content", { className: "blocksmith-post-content", layout: { type: "constrained" } });
+
+  if (isSingularTemplate(template)) {
+    return group(
+      `<div class="blocksmith-article-main">${content}</div>
+<aside class="blocksmith-article-sidebar">
+  <div class="blocksmith-author-card"><div class="blocksmith-author-portrait" aria-hidden="true"></div><p class="blocksmith-mini-label">About the author</p><h2>Elena Marquez</h2><p>Writer, coffee drinker, and neighborhood explorer. Elena covers the everyday stories that make this place home.</p>${link("More stories by Elena ->", "/category/people-features/")}</div>
+  <div class="blocksmith-story-card"><p class="blocksmith-mini-label">On this story</p><p>Published locally. Updated as the neighborhood changes.</p><p>Terms: markets, community, local food.</p></div>
+</aside>`,
+      { className: "blocksmith-article-layout" }
+    );
+  }
+
+  if (template === "page" || template === "privacy-policy" || template === "page-wide") {
+    return group(
+      `<div class="blocksmith-page-main">${content}</div>
+<aside class="blocksmith-page-sidebar">
+  <div class="blocksmith-author-card"><p class="blocksmith-mini-label">Editor's note</p><h2>Why local journalism matters</h2><p>From civic meetings to corner stores, local reporting connects us to the decisions and discoveries shaping daily life.</p>${link("Read more from Mara ->", "/about/")}</div>
+  <div class="blocksmith-story-card"><p class="blocksmith-mini-label">Stay in the know</p><p>Get our best stories in your inbox.</p>${link("Sign me up ->", "/subscribe/")}</div>
+</aside>`,
+      { className: "blocksmith-page-layout" }
+    );
+  }
+
+  return content;
+}
+
 function notFoundSection(section: BlueprintSection): string {
   return group(
     [
@@ -586,6 +611,12 @@ function postGrid(section: BlueprintSection, options: { inheritQuery?: boolean; 
   const perPage = section.query?.perPage ?? 6;
   const family = queryFamily(options.template);
   const isSingularRelated = isSingularTemplate(options.template);
+  const queryColumns = family === "archive" ? 3 : family === "related" ? 4 : Math.min(4, perPage);
+  const queryHeading = section.title
+    ? sectionHeading(section)
+    : family === "archive"
+      ? sectionHeading({ ...section, title: options.template === "search" ? "Search results" : "Latest in this section" })
+      : "";
   const query = options.inheritQuery
     ? {
         inherit: true
@@ -609,9 +640,9 @@ function postGrid(section: BlueprintSection, options: { inheritQuery?: boolean; 
 
   return block(
     "query",
-    { queryId: options.queryId ?? 1, query, tagName: "div", className: `blocksmith-query blocksmith-query-${family}`, enhancedPagination: true, displayLayout: { type: "flex", columns: Math.min(5, perPage) } },
+    { queryId: options.queryId ?? 1, query, tagName: "div", className: `blocksmith-query blocksmith-query-${family}`, enhancedPagination: true, displayLayout: { type: "flex", columns: queryColumns } },
     [
-      section.title ? sectionHeading(section) : "",
+      queryHeading,
       block(
         "post-template",
         {},
@@ -639,7 +670,7 @@ function postGrid(section: BlueprintSection, options: { inheritQuery?: boolean; 
           { className: "blocksmith-query-empty" }
         )
       ),
-      family === "related" ? "" : block("query-pagination", { layout: { type: "flex", justifyContent: "space-between" } }, [block("query-pagination-previous"), block("query-pagination-numbers"), block("query-pagination-next")].join("\n"))
+      family === "related" || !options.inheritQuery ? "" : block("query-pagination", { layout: { type: "flex", justifyContent: "space-between" } }, [block("query-pagination-previous"), block("query-pagination-numbers"), block("query-pagination-next")].join("\n"))
     ].filter(Boolean).join("\n")
   );
 }

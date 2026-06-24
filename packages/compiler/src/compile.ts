@@ -387,6 +387,10 @@ function renderBaseCss(blueprint: Blueprint): string {
   const heroAsset = (blueprint.assets ?? []).find((asset) => asset.role === "hero");
   const archiveArtAsset = (blueprint.assets ?? []).find((asset) => asset.path.includes("archive-map"));
   const notFoundArtAsset = (blueprint.assets ?? []).find((asset) => asset.path.includes("not-found-lantern"));
+  const headerBirdAsset = (blueprint.assets ?? []).find((asset) => asset.path.includes("header-bird"));
+  const editorPortraitAsset = (blueprint.assets ?? []).find((asset) => asset.path.includes("editor-portrait"));
+  const townSketchAsset = (blueprint.assets ?? []).find((asset) => asset.path.includes("town-sketch"));
+  const newsletterAsset = (blueprint.assets ?? []).find((asset) => asset.path.includes("newsletter-art"));
   const featureCardAssets = ["story-market-day", "story-teacher", "story-brass-band"].map((needle) =>
     (blueprint.assets ?? []).find((asset) => asset.path.includes(needle))
   );
@@ -408,6 +412,20 @@ function renderBaseCss(blueprint: Blueprint): string {
     : `background:
     linear-gradient(135deg, rgba(182, 63, 45, 0.16), rgba(36, 95, 104, 0.08)),
     var(--wp--preset--color--muted, ${tokens.color.muted ?? "#f4f4f4"});`;
+  const headerBirdBackground = headerBirdAsset
+    ? `background-image: url("${cssAssetUrl(headerBirdAsset.path)}");`
+    : "";
+  const editorPortraitBackground = editorPortraitAsset
+    ? `background-image: url("${cssAssetUrl(editorPortraitAsset.path)}");`
+    : "";
+  const townSketchBackground = townSketchAsset
+    ? `background-image: url("${cssAssetUrl(townSketchAsset.path)}");`
+    : archiveArtBackground;
+  const newsletterBackground = newsletterAsset
+    ? `background-image:
+    linear-gradient(90deg, rgba(15, 50, 52, 0.9), rgba(15, 50, 52, 0.72)),
+    url("${cssAssetUrl(newsletterAsset.path)}");`
+    : `background-image: linear-gradient(90deg, rgba(15, 50, 52, 0.94), rgba(15, 50, 52, 0.74));`;
   const featureCardBackground = (index: number, fallback: string) => {
     const asset = featureCardAssets[index];
 
@@ -1338,18 +1356,27 @@ function renderBaseCss(blueprint: Blueprint): string {
 }
 
 .blocksmith-query .wp-block-post-template {
+  display: grid !important;
   gap: var(--wp--preset--spacing--md);
 }
 
+.blocksmith-query .wp-block-post-template > li {
+  margin: 0 !important;
+  width: auto !important;
+}
+
 .blocksmith-query-home .wp-block-post-template {
+  display: grid !important;
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .blocksmith-query-archive .wp-block-post-template {
+  display: grid !important;
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .blocksmith-query-related .wp-block-post-template {
+  display: grid !important;
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
@@ -1475,7 +1502,361 @@ function renderBaseCss(blueprint: Blueprint): string {
   border-top-color: rgba(255, 253, 247, 0.22);
 }
 
+/* Imagegen fidelity pass: newspaper masthead, collage strip, dense editorial furniture. */
+.blocksmith-header-top {
+  background: var(--wp--preset--color--contrast, ${tokens.color.contrast});
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  padding-bottom: 0.48rem;
+  padding-top: 0.48rem;
+}
+
+.blocksmith-header {
+  margin-bottom: 0;
+}
+
+.blocksmith-masthead-row {
+  grid-template-columns: minmax(10rem, 0.9fr) minmax(22rem, 1.5fr) minmax(11rem, 0.9fr);
+  min-height: 7.8rem;
+  padding-top: 1.75rem;
+}
+
+.blocksmith-wordmark {
+  color: var(--wp--preset--color--contrast, ${tokens.color.contrast});
+  display: grid;
+  gap: 0.2rem;
+  justify-items: center;
+  line-height: 1;
+  text-decoration: none;
+  text-transform: uppercase;
+  max-width: 42rem;
+}
+
+.blocksmith-wordmark span {
+  font-family: var(--wp--preset--font-family--heading);
+  font-size: 1.55rem;
+  letter-spacing: 0.18em;
+}
+
+.blocksmith-wordmark strong {
+  color: var(--wp--preset--color--primary, ${tokens.color.primary});
+  font-family: var(--wp--preset--font-family--heading);
+  font-size: clamp(3.8rem, 6.2vw, 5.8rem);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  line-height: 0.78;
+}
+
+.blocksmith-wordmark em {
+  color: var(--wp--preset--color--contrast, ${tokens.color.contrast});
+  font-family: var(--wp--preset--font-family--body);
+  font-size: 0.72rem;
+  font-style: normal;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+}
+
+.blocksmith-site-brand-native {
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  height: 1px;
+  overflow: hidden;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
+}
+
+.blocksmith-masthead-ornament {
+  align-items: center;
+  display: grid;
+  gap: 0.8rem;
+  grid-template-columns: 5.4rem minmax(0, 1fr);
+}
+
+.blocksmith-masthead-ornament p {
+  font-size: 0.76rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  line-height: 1.7;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.blocksmith-header-bird {
+  ${headerBirdBackground}
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  border-radius: 999px;
+  height: 4.8rem;
+  mix-blend-mode: multiply;
+}
+
+.blocksmith-hero {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  margin-bottom: 0;
+}
+
+.blocksmith-hero-grid {
+  border-bottom: 1px solid var(--wp--preset--color--border, ${tokens.color.border ?? "#dddddd"});
+  border-top: 1px solid var(--wp--preset--color--border, ${tokens.color.border ?? "#dddddd"});
+  grid-template-columns: minmax(18rem, 0.42fr) minmax(0, 1fr);
+  min-height: 34rem;
+}
+
+.blocksmith-hero-copy {
+  align-self: center;
+  padding-left: clamp(1rem, 2vw, 2rem);
+}
+
+.blocksmith-hero h1 {
+  font-size: clamp(3rem, 4vw, 4.9rem);
+  line-height: 1.05;
+}
+
+.blocksmith-hero-art {
+  border-right: 0;
+  background-position: center;
+}
+
+.blocksmith-hero-art span {
+  top: auto;
+  bottom: 2rem;
+}
+
+.blocksmith-home-collage-wrap {
+  margin: 0 auto var(--wp--preset--spacing--xl);
+  max-width: var(--wp--style--global--wide-size, ${tokens.layout.wideSize});
+}
+
+.blocksmith-home-collage {
+  border-bottom: 1px solid var(--wp--preset--color--border, ${tokens.color.border ?? "#dddddd"});
+  display: grid;
+  grid-template-columns: 1fr 1.02fr 1fr;
+  min-height: 11.2rem;
+}
+
+.blocksmith-collage-map,
+.blocksmith-collage-sketch {
+  background-position: center;
+  background-size: cover;
+  min-height: 11.2rem;
+}
+
+.blocksmith-collage-map {
+  ${archiveArtBackground}
+}
+
+.blocksmith-collage-sketch {
+  ${townSketchBackground}
+}
+
+.blocksmith-collage-quote {
+  align-items: center;
+  background: rgba(255, 253, 247, 0.8);
+  display: grid;
+  justify-items: center;
+  padding: var(--wp--preset--spacing--md);
+  text-align: center;
+}
+
+.blocksmith-collage-quote p {
+  font-family: var(--wp--preset--font-family--heading);
+  font-size: 1.12rem;
+  line-height: 1.45;
+  margin: 0;
+}
+
+.blocksmith-collage-quote strong {
+  color: var(--wp--preset--color--primary, ${tokens.color.primary});
+  font-size: 0.78rem;
+  letter-spacing: 0.18em;
+}
+
+.blocksmith-query-home .wp-block-post-template {
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+}
+
+.blocksmith-query-archive .wp-block-post-template {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+}
+
+.blocksmith-query-related .wp-block-post-template {
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+}
+
+.blocksmith-query-home .wp-block-post-template > li,
+.blocksmith-query-archive .wp-block-post-template > li,
+.blocksmith-query-related .wp-block-post-template > li {
+  width: auto !important;
+}
+
+.blocksmith-editor-note {
+  background:
+    radial-gradient(circle at 82% 48%, rgba(36, 95, 104, 0.1), transparent 17rem),
+    var(--wp--preset--color--surface-alt, ${tokens.color.surfaceAlt ?? tokens.color.muted ?? "#f4f4f4"});
+  grid-template-columns: minmax(7rem, 0.28fr) minmax(0, 1fr) minmax(9rem, 0.3fr);
+}
+
+.blocksmith-note-mark {
+  ${editorPortraitBackground}
+  background-position: center;
+  background-size: cover;
+  border: 0;
+  border-radius: 999px;
+  height: 8.5rem;
+  justify-self: center;
+  width: 8.5rem;
+}
+
+.blocksmith-note-mark::before {
+  display: none;
+}
+
+.blocksmith-note-quote h2 {
+  font-size: clamp(2.25rem, 3vw, 3.35rem);
+  max-width: 52rem;
+}
+
+.blocksmith-inline-action {
+  color: var(--wp--preset--color--contrast, ${tokens.color.contrast});
+  display: inline-block;
+  font-size: 0.82rem;
+  font-weight: 900;
+  margin-top: 0.85rem;
+  text-transform: uppercase;
+}
+
+.blocksmith-note-aside {
+  align-items: center;
+  border: 2px solid rgba(23, 19, 15, 0.18);
+  border-radius: 999px;
+  display: grid;
+  height: 8rem;
+  justify-items: center;
+  padding: 0;
+  transform: rotate(-12deg);
+  width: 8rem;
+}
+
+.blocksmith-note-aside span {
+  color: var(--wp--preset--color--primary, ${tokens.color.primary});
+  font-family: var(--wp--preset--font-family--heading);
+  font-size: 2rem;
+  font-weight: 800;
+}
+
+.blocksmith-cta {
+  ${newsletterBackground}
+  background-position: center;
+  background-size: cover;
+  grid-template-columns: minmax(0, 1fr) auto;
+  margin-left: auto;
+  margin-right: auto;
+  min-height: 13rem;
+  padding-left: clamp(12rem, 22vw, 22rem);
+  padding-right: clamp(8rem, 17vw, 18rem);
+}
+
+.blocksmith-cta-icon {
+  display: none;
+}
+
+.blocksmith-cta h2 {
+  font-size: clamp(2.1rem, 3vw, 3.2rem);
+}
+
+.blocksmith-article-layout,
+.blocksmith-page-layout {
+  display: grid;
+  gap: var(--wp--preset--spacing--lg);
+  grid-template-columns: minmax(0, 1fr) minmax(15rem, 0.34fr);
+  margin-left: auto;
+  margin-right: auto;
+  max-width: var(--wp--style--global--wide-size, ${tokens.layout.wideSize});
+}
+
+.blocksmith-article-main,
+.blocksmith-page-main {
+  min-width: 0;
+}
+
+.blocksmith-article-sidebar,
+.blocksmith-page-sidebar {
+  display: grid;
+  gap: var(--wp--preset--spacing--md);
+  align-content: start;
+}
+
+.blocksmith-author-card,
+.blocksmith-story-card {
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid var(--wp--preset--color--border, ${tokens.color.border ?? "#dddddd"});
+  padding: var(--wp--preset--spacing--md);
+}
+
+.blocksmith-author-card h2 {
+  font-size: 1.35rem;
+}
+
+.blocksmith-author-portrait {
+  ${editorPortraitBackground}
+  background-position: center;
+  background-size: cover;
+  border-radius: 999px;
+  height: 4.5rem;
+  margin-bottom: var(--wp--preset--spacing--sm);
+  width: 4.5rem;
+}
+
+.blocksmith-post-content h2 {
+  font-size: 2rem;
+  margin-top: var(--wp--preset--spacing--lg);
+}
+
+.blocksmith-post-content blockquote {
+  border-left: 3px solid var(--wp--preset--color--primary, ${tokens.color.primary});
+  font-family: var(--wp--preset--font-family--heading);
+  font-size: 1.55rem;
+  line-height: 1.35;
+  margin: var(--wp--preset--spacing--lg) 0;
+  padding-left: var(--wp--preset--spacing--md);
+}
+
+.blocksmith-post-content ul {
+  border-top: 1px solid var(--wp--preset--color--border, ${tokens.color.border ?? "#dddddd"});
+  list-style: none;
+  padding-left: 0;
+  padding-top: var(--wp--preset--spacing--sm);
+}
+
 @media (max-width: 980px) {
+  .blocksmith-masthead-row {
+    grid-template-columns: 1fr;
+  }
+
+  .blocksmith-masthead-ornament {
+    justify-content: center;
+  }
+
+  .blocksmith-home-collage,
+  .blocksmith-article-layout,
+  .blocksmith-page-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .blocksmith-cta {
+    grid-template-columns: 1fr;
+    padding-left: var(--wp--preset--spacing--lg);
+    padding-right: var(--wp--preset--spacing--lg);
+  }
+
   .blocksmith-archive-header,
   .blocksmith-post-header,
   .blocksmith-page-header {
@@ -1507,7 +1888,7 @@ function renderBaseCss(blueprint: Blueprint): string {
   .blocksmith-query-home .wp-block-post-template,
   .blocksmith-query-archive .wp-block-post-template,
   .blocksmith-query-related .wp-block-post-template {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   }
 }
 
@@ -1545,13 +1926,29 @@ function renderBaseCss(blueprint: Blueprint): string {
     text-align: center;
   }
 
-  .blocksmith-masthead-note {
+  .blocksmith-masthead-note,
+  .blocksmith-masthead-ornament {
     display: none;
   }
 
   .blocksmith-site-brand,
-  .blocksmith-masthead-note-right {
+  .blocksmith-masthead-note-right,
+  .blocksmith-wordmark {
     text-align: center;
+  }
+
+  .blocksmith-wordmark span {
+    font-size: 0.72rem;
+    letter-spacing: 0.16em;
+  }
+
+  .blocksmith-wordmark strong {
+    font-size: 1.92rem;
+    letter-spacing: 0.06em;
+  }
+
+  .blocksmith-wordmark em {
+    display: none;
   }
 
   .blocksmith-site-brand .wp-block-site-title {
@@ -1591,6 +1988,10 @@ function renderBaseCss(blueprint: Blueprint): string {
     font-size: 2.35rem;
   }
 
+  .blocksmith-home-collage-wrap {
+    display: none;
+  }
+
   .blocksmith-hero-art {
     min-height: 16rem;
     order: -1;
@@ -1603,11 +2004,11 @@ function renderBaseCss(blueprint: Blueprint): string {
   .blocksmith-feature-grid .wp-block-columns,
   .blocksmith-query-home .wp-block-post-template,
   .blocksmith-query-related .wp-block-post-template {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr !important;
   }
 
   .blocksmith-query-archive .wp-block-post-template {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr !important;
   }
 
   .blocksmith-query-archive .blocksmith-post-card {
@@ -1646,6 +2047,21 @@ function renderBaseCss(blueprint: Blueprint): string {
   .blocksmith-footer {
     padding-left: 1rem;
     padding-right: 1rem;
+  }
+
+  .blocksmith-editor-note {
+    grid-template-columns: 1fr;
+    text-align: left;
+  }
+
+  .blocksmith-note-mark,
+  .blocksmith-note-aside {
+    justify-self: start;
+  }
+
+  .blocksmith-cta {
+    min-height: 0;
+    padding: var(--wp--preset--spacing--lg) var(--wp--preset--spacing--sm);
   }
 }
 `;
@@ -1798,6 +2214,22 @@ function blocksmith_set_featured_image_from_theme_asset(int $post_id, string $re
 }
 }
 
+if (!function_exists('blocksmith_story_content')) {
+function blocksmith_story_content(array $story): string {
+    $excerpt = esc_html($story['excerpt']);
+    return '<p>' . $excerpt . '</p>'
+        . '<h2>The morning rush</h2>'
+        . '<p>By midmorning, the sidewalks are busy with the practical rituals that hold a place together: greetings, errands, coffee, and the small acts of attention people remember.</p>'
+        . '<blockquote><p>The story is never only the place. It is the people who keep showing up for it.</p></blockquote>'
+        . '<h2>Faces of the place</h2>'
+        . '<p>Every visit turns up someone new and someone familiar. That mix is what keeps the dispatch honest: a little history, a little usefulness, and a little wonder.</p>'
+        . '<h2>Why it matters</h2>'
+        . '<p>Local stories like this keep more than dates and addresses alive. They remind readers where memory, commerce, patience, and community meet.</p>'
+        . '<h2>Plan your visit</h2>'
+        . '<ul><li>Best time: Saturday morning</li><li>Bring: curiosity and a little cash</li><li>Nearby: coffee, shade, and a good walk</li></ul>';
+}
+}
+
 $pages = array(
     array('title' => 'Regionally Famous Home', 'slug' => 'home', 'content' => '<p>The front page uses the theme front-page.html template.</p>'),
     array('title' => 'Dispatches', 'slug' => 'dispatches', 'content' => '<p>Browse the Dispatch category archive for the live WordPress loop.</p>'),
@@ -1879,6 +2311,15 @@ $stories = array(
         'date' => '2026-06-14 09:00:00',
     ),
     array(
+        'title' => 'Streets, storefronts, and unsung corners',
+        'slug' => 'streets-storefronts-and-unsung-corners',
+        'excerpt' => 'Three shopfronts, one stoop, and the block everyone uses as a landmark.',
+        'categories' => array('Dispatch', 'Place notes'),
+        'tags' => array('Local', 'Markets'),
+        'image' => 'assets/images/regionally-famous/town-sketch.jpg',
+        'date' => '2026-06-12 09:00:00',
+    ),
+    array(
         'title' => 'A teacher with the long view',
         'slug' => 'a-teacher-with-the-long-view',
         'excerpt' => 'A careful conversation about classrooms, corner stores, and civic patience.',
@@ -1886,6 +2327,15 @@ $stories = array(
         'tags' => array('Local', 'Schools'),
         'image' => 'assets/images/regionally-famous/story-teacher.jpg',
         'date' => '2026-06-10 09:00:00',
+    ),
+    array(
+        'title' => 'Five riverside walks worth remembering',
+        'slug' => 'five-riverside-walks-worth-remembering',
+        'excerpt' => 'Quiet paths, old bridges, and the best bench when the afternoon turns gold.',
+        'categories' => array('Dispatch', 'Place notes', 'Guides'),
+        'tags' => array('Local'),
+        'image' => 'assets/images/regionally-famous/archive-map.jpg',
+        'date' => '2026-06-08 09:00:00',
     ),
     array(
         'title' => 'The brass band of Whitman Park',
@@ -1897,6 +2347,15 @@ $stories = array(
         'date' => '2026-06-06 09:00:00',
     ),
     array(
+        'title' => 'The garden that outlived the owners',
+        'slug' => 'the-garden-that-outlived-the-owners',
+        'excerpt' => 'How one backyard became a neighborhood sanctuary, one volunteer at a time.',
+        'categories' => array('Dispatch', 'Place notes', 'Small legends'),
+        'tags' => array('Local'),
+        'image' => 'assets/images/regionally-famous/hero-dance-hall.jpg',
+        'date' => '2026-06-04 09:00:00',
+    ),
+    array(
         'title' => 'Where to eat after the late show',
         'slug' => 'where-to-eat-after-the-late-show',
         'excerpt' => 'Five modest counters, one perfect soup, and a dessert worth crossing town for.',
@@ -1905,6 +2364,15 @@ $stories = array(
         'image' => 'assets/images/regionally-famous/story-food-guide.jpg',
         'date' => '2026-06-02 09:00:00',
     ),
+    array(
+        'title' => 'Postcards from Riverton, then and now',
+        'slug' => 'postcards-from-riverton-then-and-now',
+        'excerpt' => 'A neighborhood story in storefronts, murals, and small promises kept.',
+        'categories' => array('Dispatch', 'Place notes'),
+        'tags' => array('Local', 'Cinema'),
+        'image' => 'assets/images/regionally-famous/town-sketch.jpg',
+        'date' => '2026-05-30 09:00:00',
+    ),
 );
 
 foreach ($stories as $story) {
@@ -1912,7 +2380,7 @@ foreach ($stories as $story) {
         'post_title' => $story['title'],
         'post_name' => $story['slug'],
         'post_excerpt' => $story['excerpt'],
-        'post_content' => '<p>' . $story['excerpt'] . '</p><p>This sample story exists so Blocksmith previews can show real editorial rhythm in WordPress Playground.</p>',
+        'post_content' => blocksmith_story_content($story),
         'post_status' => 'publish',
         'post_type' => 'post',
         'post_date' => $story['date'],
