@@ -5,7 +5,7 @@ import { compileBlueprint } from "../src/index.js";
 import { validateThemeOutput } from "@blocksmith/validator";
 import type { Blueprint } from "@blocksmith/schema";
 
-const examples = ["blog", "portfolio", "small-business", "magazine", "nonprofit"];
+const examples = ["blog", "portfolio", "small-business", "magazine", "nonprofit", "midnight-signal"];
 const requiredTemplates = [
   "404",
   "archive",

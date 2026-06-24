@@ -33,6 +33,22 @@ export function renderSection(section: BlueprintSection, blueprint: Blueprint, c
 
   switch (section.kind) {
     case "header": {
+      if (isMidnightSignal(blueprint)) {
+        return group(
+          [
+            `<div class="blocksmith-header-top blocksmith-topbar"><span>02:17 local / ${escapeHtml(new Date().getUTCFullYear().toString())}</span><span>Essays&nbsp;&nbsp; Signals&nbsp;&nbsp; Mixtapes&nbsp;&nbsp; Subscribe</span></div>`,
+            `<div class="blocksmith-masthead-row">
+  <p class="blocksmith-masthead-note">Late essays.<br>City static.<br>Durable notes.</p>
+  <a class="blocksmith-wordmark" href="/"><span>Midnight</span><strong>Signal</strong><em>Essays after the feed goes quiet.</em></a>
+  <div class="blocksmith-site-brand-native">${block("site-title", { level: 0 })}</div>
+  <div class="blocksmith-masthead-ornament"><div class="blocksmith-header-bird" aria-hidden="true"></div><p>Independent<br>notes after<br>midnight.</p></div>
+</div>`,
+            `<div class="blocksmith-nav-row"><div class="blocksmith-site-nav">${navigation(blueprint)}</div><div class="blocksmith-site-search">${block("search", { label: "Search", showLabel: false, placeholder: "Search signals...", buttonText: "Search", buttonPosition: "button-inside" })}</div></div>`
+          ].join("\n"),
+          { align: "full", className: "blocksmith-header blocksmith-header-signal" }
+        );
+      }
+
       const wordmarkBase = blueprint.metadata.name.replace(/\s+Dispatch$/i, "");
       return group(
         [
@@ -43,12 +59,27 @@ export function renderSection(section: BlueprintSection, blueprint: Blueprint, c
   <div class="blocksmith-site-brand-native">${block("site-title", { level: 0 })}</div>
   <div class="blocksmith-masthead-ornament"><div class="blocksmith-header-bird" aria-hidden="true"></div><p>A modern<br>publication<br>rooted here.</p></div>
 </div>`,
-          `<div class="blocksmith-nav-row"><div class="blocksmith-site-nav">${navigation()}</div><div class="blocksmith-site-search">${block("search", { label: "Search", showLabel: false, buttonText: "Search", buttonPosition: "button-only" })}</div></div>`
+          `<div class="blocksmith-nav-row"><div class="blocksmith-site-nav">${navigation(blueprint)}</div><div class="blocksmith-site-search">${block("search", { label: "Search", showLabel: false, buttonText: "Search", buttonPosition: "button-only" })}</div></div>`
         ].join("\n"),
         { align: "full", className: "blocksmith-header" }
       );
     }
     case "footer":
+      if (isMidnightSignal(blueprint)) {
+        return group(
+          [
+            `<div class="blocksmith-footer-grid">
+  <div class="blocksmith-footer-about">${block("site-title", { level: 0 })}${paragraph(section.text ?? "Essay culture for the quiet hours: notes on cities, software, music, memory, and the private internet.")}${link("About the signal ->", "/about/")}</div>
+  <div><p class="blocksmith-footer-label">Explore</p>${link("Essays", "/category/essays/")}${link("City notes", "/category/city-notes/")}${link("Signals", "/category/signals/")}${link("Mixtapes", "/category/mixtapes/")}</div>
+  <div><p class="blocksmith-footer-label">Info</p>${link("About", "/about/")}${link("Archive", "/archive/")}${link("Tags", "/tag/night/")}${link("Contact", "/contact/")}</div>
+  <div class="blocksmith-footer-card"><p class="blocksmith-footer-label">Reader powered</p><p>Independent notes for people still reading after midnight.</p>${link("Support the signal ->", "/subscribe/")}</div>
+</div>`,
+            `<div class="blocksmith-footer-bottom"><span>Built with WordPress.</span><span>Dark mode is the default.</span></div>`
+          ].join("\n"),
+          { align: "full", className: "blocksmith-footer blocksmith-footer-signal" }
+        );
+      }
+
       return group(
         [
           `<div class="blocksmith-footer-grid">
@@ -62,46 +93,46 @@ export function renderSection(section: BlueprintSection, blueprint: Blueprint, c
         { align: "full", className: "blocksmith-footer" }
       );
     case "hero":
-      return hero(section, variant);
+      return hero(section, variant, blueprint);
     case "intro":
       if (variant === "editor-note") {
-        return editorNote(section);
+        return editorNote(section, blueprint);
       }
       return group(
         [heading(section.title ?? "A clear point of view", 2, "center"), paragraph(section.text ?? "Use this section to set the frame with calm, readable copy.", { align: "center" })].join("\n"),
         { className: "blocksmith-intro", layout: { type: "constrained", contentSize: "760px" } }
       );
     case "featureGrid":
-      return featureGrid(section);
+      return featureGrid(section, blueprint);
     case "mediaText":
       return mediaText(section);
     case "ctaBand":
       return group(
         [
           `<div class="blocksmith-cta-icon blocksmith-newsletter-art" aria-hidden="true"></div>`,
-          `<div class="blocksmith-cta-copy">${heading(section.title ?? "Good stories in your inbox.", 2)}${paragraph(section.text ?? "A weekly dispatch of local stories and behind-the-scenes notes.")}</div>`,
+          `<div class="blocksmith-cta-copy">${heading(section.title ?? (isMidnightSignal(blueprint) ? "New transmissions, delivered." : "Good stories in your inbox."), 2)}${paragraph(section.text ?? (isMidnightSignal(blueprint) ? "Late-night essays, field notes, and signal logs in your inbox." : "A weekly dispatch of local stories and behind-the-scenes notes."))}</div>`,
           `<div class="blocksmith-cta-action">${buttons(section.cta)}</div>`
         ].join("\n"),
         { align: "full", className: "blocksmith-cta" }
       );
     case "postGrid":
-      return postGrid(section, { inheritQuery: isInheritedQueryTemplate(options.template), queryId: queryIdFor(options), template: options.template });
+      return postGrid(section, blueprint, { inheritQuery: isInheritedQueryTemplate(options.template), queryId: queryIdFor(options), template: options.template });
     case "archiveHeader":
-      return archiveHeader(options.template);
+      return archiveHeader(options.template, blueprint);
     case "postHeader":
-      return postHeader(options.template);
+      return postHeader(options.template, blueprint);
     case "featuredImage":
       return featuredImage(options.template);
     case "postContent":
-      return postContent(options.template);
+      return postContent(options.template, blueprint);
     case "comments":
       return block("comments");
     case "pagination":
       return block("query-pagination", { layout: { type: "flex", justifyContent: "space-between" } }, `<div class="wp-block-query-pagination">${[block("query-pagination-previous"), block("query-pagination-numbers"), block("query-pagination-next")].join("\n")}</div>`);
     case "searchResults":
-      return postGrid({ ...section, kind: "postGrid" }, { inheritQuery: true, queryId: queryIdFor(options), template: options.template });
+      return postGrid({ ...section, kind: "postGrid" }, blueprint, { inheritQuery: true, queryId: queryIdFor(options), template: options.template });
     case "notFound":
-      return notFoundSection(section);
+      return notFoundSection(section, blueprint);
     case "part":
       if (context === "pattern") {
         return "";
@@ -395,7 +426,7 @@ export function renderStyleVariation(title: string, blueprint: Blueprint, tokenO
   return stableJson({ title, version: 3, settings: parsed.settings, styles: parsed.styles });
 }
 
-function hero(section: BlueprintSection, variant?: string): string {
+function hero(section: BlueprintSection, variant: string | undefined, blueprint: Blueprint): string {
   const title = section.title ?? "A WordPress theme with a point of view";
   const text = section.text ?? "A focused opening section with enough contrast, rhythm, and restraint to carry the page.";
   const inner = [
@@ -403,7 +434,24 @@ function hero(section: BlueprintSection, variant?: string): string {
     heading(title, 1),
     paragraph(text),
     section.cta ? buttons(section.cta) : ""
-  ].filter(Boolean).join("\n");
+    ].filter(Boolean).join("\n");
+
+  if (isMidnightSignal(blueprint)) {
+    return group(
+      `<div class="blocksmith-hero-grid">
+  <div class="blocksmith-hero-copy">${inner}</div>
+  <div class="blocksmith-hero-art" aria-hidden="true"><span>Signal log</span></div>
+  <aside class="blocksmith-issue-log" aria-label="Issue log">
+    <p class="blocksmith-mini-label">Issue log</p>
+    <a href="/story/the-city-sounds-different-after-the-apps-close/"><span>016</span><strong>Static & patience</strong><em>Jun 18</em></a>
+    <a href="/story/a-tiny-guide-to-keeping-a-private-internet/"><span>015</span><strong>After the algorithm</strong><em>Jun 14</em></a>
+    <a href="/story/songs-for-walking-home-through-light-rain/"><span>014</span><strong>Slow internet Sundays</strong><em>Jun 06</em></a>
+    ${link("View all logs ->", "/category/essays/", "blocksmith-issue-link")}
+  </aside>
+</div>`,
+      { align: "wide", className: "blocksmith-hero blocksmith-hero-signal" }
+    );
+  }
 
   if (variant === "split-media") {
     return block(
@@ -434,27 +482,28 @@ ${[
   );
 }
 
-function editorNote(section: BlueprintSection): string {
+function editorNote(section: BlueprintSection, blueprint: Blueprint): string {
   return group(
     [
       `<div class="blocksmith-note-mark" aria-hidden="true"></div>`,
-      `<div class="blocksmith-note-quote"><p class="blocksmith-mini-label">A note from the editor</p>${heading(section.title ?? "Editor's note", 2)}${paragraph(section.text ?? "A short editorial beat gives the page a humane pause before the final call to action.")}${section.cta ? link(section.cta.label + " ->", section.cta.url, "blocksmith-inline-action") : ""}</div>`,
-      `<div class="blocksmith-note-aside" aria-hidden="true"><span>RFD</span></div>`
+      `<div class="blocksmith-note-quote"><p class="blocksmith-mini-label">${isMidnightSignal(blueprint) ? "Editor transmission" : "A note from the editor"}</p>${heading(section.title ?? "Editor's note", 2)}${paragraph(section.text ?? "A short editorial beat gives the page a humane pause before the final call to action.")}${section.cta ? link(section.cta.label + " ->", section.cta.url, "blocksmith-inline-action") : ""}</div>`,
+      `<div class="blocksmith-note-aside" aria-hidden="true"><span>${themeInitials(blueprint)}</span></div>`
     ].join("\n"),
     { align: "full", className: "blocksmith-editor-note" }
   );
 }
 
-function featureGrid(section: BlueprintSection): string {
+function featureGrid(section: BlueprintSection, blueprint?: Blueprint): string {
   const items = section.items?.length ? section.items : [
     { title: "Clear structure", text: "A disciplined layout system keeps sections readable." },
     { title: "Tasteful defaults", text: "Profiles guide hierarchy, density, and contrast." },
     { title: "WordPress native", text: "Generated output stays editable in normal block themes." }
   ];
 
-  const kickers = ["Place notes", "People features", "Small legends"];
-  const links = ["Explore places ->", "Meet the people ->", "Read the legends ->"];
-  const urls = ["/category/place-notes/", "/category/people-features/", "/category/small-legends/"];
+  const signal = blueprint ? isMidnightSignal(blueprint) : false;
+  const kickers = signal ? ["City notes", "Longform", "Signals"] : ["Place notes", "People features", "Small legends"];
+  const links = signal ? ["Explore city notes ->", "Read essays ->", "Open signals ->"] : ["Explore places ->", "Meet the people ->", "Read the legends ->"];
+  const urls = signal ? ["/category/city-notes/", "/category/essays/", "/category/signals/"] : ["/category/place-notes/", "/category/people-features/", "/category/small-legends/"];
   const columns = items.slice(0, 3).map((item, index) =>
     column(
       group(
@@ -491,7 +540,7 @@ ${[
   );
 }
 
-function archiveHeader(template?: string): string {
+function archiveHeader(template: string | undefined, blueprint: Blueprint): string {
   const type = template === "search" ? "search" : "archive";
   const eyebrow = type === "search" ? "Search" : "Archive";
   const children = [
@@ -507,8 +556,8 @@ function archiveHeader(template?: string): string {
     `<div class="blocksmith-archive-sidecar">
   <div class="blocksmith-archive-art" aria-hidden="true"></div>
   <div class="blocksmith-archive-tools">
-  <div class="blocksmith-archive-search">${block("search", { label: "Search the archive", showLabel: false, placeholder: "Search dispatches...", buttonText: "Search" })}</div>
-  <div class="blocksmith-topic-links">${topicLinks()}</div>
+  <div class="blocksmith-archive-search">${block("search", { label: "Search the archive", showLabel: false, placeholder: isMidnightSignal(blueprint) ? "Search transmissions..." : "Search dispatches...", buttonText: "Search" })}</div>
+  <div class="blocksmith-topic-links">${topicLinks(blueprint)}</div>
 </div>
 </div>`
   );
@@ -536,17 +585,17 @@ function queryIdFor(options: { template?: string; sectionIndex?: number }): numb
   return seed + (options.sectionIndex ?? 0) + 1;
 }
 
-function postHeader(template?: string): string {
+function postHeader(template: string | undefined, blueprint: Blueprint): string {
   const isPage = template === "page" || template === "privacy-policy" || template === "page-wide";
   const meta = isPage
     ? `<div class="blocksmith-breadcrumbs">${link("Home", "/")}<span>/</span><span>Page</span></div>`
-    : `<div class="blocksmith-breadcrumbs">${link("Home", "/")}<span>/</span>${link("Dispatches", "/category/dispatch/")}</div>
+    : `<div class="blocksmith-breadcrumbs">${link("Home", "/")}<span>/</span>${link(isMidnightSignal(blueprint) ? "Essays" : "Dispatches", isMidnightSignal(blueprint) ? "/category/essays/" : "/category/dispatch/")}</div>
 <div class="blocksmith-post-meta-list">
   ${block("post-terms", { term: "category", separator: " / " })}
   ${block("post-date", { isLink: true })}
   ${block("post-author-name", { isLink: true })}
 </div>
-<div class="blocksmith-post-share"><span>Share</span>${link("Email", "mailto:?subject=Regionally%20Famous%20Dispatch")}${link("Submit a tip", "/contact/")}</div>`;
+<div class="blocksmith-post-share"><span>${isMidnightSignal(blueprint) ? "Transmit" : "Share"}</span>${link("Email", `mailto:?subject=${isMidnightSignal(blueprint) ? "Midnight%20Signal" : "Regionally%20Famous%20Dispatch"}`)}${link(isMidnightSignal(blueprint) ? "Send a note" : "Submit a tip", "/contact/")}</div>`;
 
   const titleStack = [
     block("post-title", { level: 1 }),
@@ -562,10 +611,21 @@ function postHeader(template?: string): string {
   );
 }
 
-function postContent(template?: string): string {
+function postContent(template: string | undefined, blueprint: Blueprint): string {
   const content = block("post-content", { className: "blocksmith-post-content", layout: { type: "constrained" } });
 
   if (isSingularTemplate(template)) {
+    if (isMidnightSignal(blueprint)) {
+      return group(
+        `<div class="blocksmith-article-main">${content}</div>
+<aside class="blocksmith-article-sidebar">
+  <div class="blocksmith-author-card"><div class="blocksmith-author-portrait" aria-hidden="true"></div><p class="blocksmith-mini-label">About the author</p><h2>Mira Vale</h2><p>Night editor, essayist, and collector of useful static. Mira writes about cities, software, attention, music, and private corners of the web.</p>${link("More essays by Mira ->", "/category/essays/")}</div>
+  <div class="blocksmith-story-card"><p class="blocksmith-mini-label">On this signal</p><p>Published from the late desk. Updated when the noise clears.</p><p>Terms: night, city, signal, attention.</p></div>
+</aside>`,
+        { className: "blocksmith-article-layout" }
+      );
+    }
+
     return group(
       `<div class="blocksmith-article-main">${content}</div>
 <aside class="blocksmith-article-sidebar">
@@ -577,6 +637,17 @@ function postContent(template?: string): string {
   }
 
   if (template === "page" || template === "privacy-policy" || template === "page-wide") {
+    if (isMidnightSignal(blueprint)) {
+      return group(
+        `<div class="blocksmith-page-main">${content}</div>
+<aside class="blocksmith-page-sidebar">
+  <div class="blocksmith-author-card"><p class="blocksmith-mini-label">Desk note</p><h2>Built for readers who linger.</h2><p>Midnight Signal is a sample independent blog with live archives, real post loops, categories, search, and page templates.</p>${link("Read the essays ->", "/category/essays/")}</div>
+  <div class="blocksmith-story-card"><p class="blocksmith-mini-label">Stay tuned</p><p>Get new transmissions in your inbox.</p>${link("Subscribe ->", "/subscribe/")}</div>
+</aside>`,
+        { className: "blocksmith-page-layout" }
+      );
+    }
+
     return group(
       `<div class="blocksmith-page-main">${content}</div>
 <aside class="blocksmith-page-sidebar">
@@ -604,24 +675,24 @@ function featuredImage(template?: string): string {
   );
 }
 
-function notFoundSection(section: BlueprintSection): string {
+function notFoundSection(section: BlueprintSection, blueprint: Blueprint): string {
   return group(
     [
       `<p class="blocksmith-template-kicker">404</p>`,
-      heading(section.title ?? "Nothing found.", 1, "center"),
-      paragraph(section.text ?? "We looked high and low, but couldn't find that page. Let's get you back on track.", { align: "center" }),
+      heading(section.title ?? (isMidnightSignal(blueprint) ? "Signal lost." : "Nothing found."), 1, "center"),
+      paragraph(section.text ?? (isMidnightSignal(blueprint) ? "That route has gone quiet. Search the archive or tune back to a live section." : "We looked high and low, but couldn't find that page. Let's get you back on track."), { align: "center" }),
       `<div class="blocksmith-not-found-art" aria-hidden="true"></div>`,
       `<div class="blocksmith-recovery-panel">
   ${heading("Search the archive", 2)}
-  ${block("search", { label: "Search", showLabel: false, placeholder: "Search stories, topics, people...", buttonText: "Search" })}
+  ${block("search", { label: "Search", showLabel: false, placeholder: isMidnightSignal(blueprint) ? "Search essays, signals, mixtapes..." : "Search stories, topics, people...", buttonText: "Search" })}
 </div>`,
-      `<div class="blocksmith-topic-links blocksmith-topic-links-large">${topicLinks()}</div>`
+      `<div class="blocksmith-topic-links blocksmith-topic-links-large">${topicLinks(blueprint)}</div>`
     ].join("\n"),
     { className: "blocksmith-not-found", layout: { type: "constrained" } }
   );
 }
 
-function postGrid(section: BlueprintSection, options: { inheritQuery?: boolean; queryId?: number; template?: string } = {}): string {
+function postGrid(section: BlueprintSection, blueprint: Blueprint, options: { inheritQuery?: boolean; queryId?: number; template?: string } = {}): string {
   const perPage = section.query?.perPage ?? 6;
   const family = queryFamily(options.template);
   const isSingularRelated = isSingularTemplate(options.template);
@@ -665,7 +736,7 @@ function postGrid(section: BlueprintSection, options: { inheritQuery?: boolean; 
             block("post-featured-image", { isLink: true, className: "blocksmith-post-card-media" }),
             block("post-terms", { term: "category", separator: " / ", className: "blocksmith-post-card-terms" }),
             block("post-title", { isLink: true, level: 3 }),
-            block("post-excerpt", { moreText: "Read more" }),
+            block("post-excerpt", { moreText: isMidnightSignal(blueprint) ? "Read post" : "Read more" }),
             block("post-date", { isLink: true })
           ].join("\n"),
           { className: `blocksmith-post-card blocksmith-post-card-${family}` }
@@ -678,8 +749,8 @@ function postGrid(section: BlueprintSection, options: { inheritQuery?: boolean; 
           [
             heading("Nothing matched this query.", 2),
             paragraph("Try another search or browse the most useful sections."),
-            block("search", { label: "Search again", showLabel: false, placeholder: "Search dispatches...", buttonText: "Search" }),
-            `<div class="blocksmith-topic-links">${topicLinks()}</div>`
+            block("search", { label: "Search again", showLabel: false, placeholder: isMidnightSignal(blueprint) ? "Search transmissions..." : "Search dispatches...", buttonText: "Search" }),
+            `<div class="blocksmith-topic-links">${topicLinks(blueprint)}</div>`
           ].join("\n"),
           { className: "blocksmith-query-empty" }
         )
@@ -703,7 +774,17 @@ function isSingularTemplate(template?: string): boolean {
   return template === "single" || template === "single-post" || template === "singular" || template === "attachment" || template === "embed";
 }
 
-function topicLinks(): string {
+function topicLinks(blueprint: Blueprint): string {
+  if (isMidnightSignal(blueprint)) {
+    return [
+      link("Essays ->", "/category/essays/"),
+      link("City notes ->", "/category/city-notes/"),
+      link("Signals ->", "/category/signals/"),
+      link("Mixtapes ->", "/category/mixtapes/"),
+      link("Longform ->", "/category/longform/")
+    ].join("\n");
+  }
+
   return [
     link("Dispatches ->", "/category/dispatch/"),
     link("Place notes ->", "/category/place-notes/"),
@@ -797,7 +878,22 @@ function buttons(cta?: { label: string; url: string }): string {
   );
 }
 
-function navigation(): string {
+function navigation(blueprint: Blueprint): string {
+  if (isMidnightSignal(blueprint)) {
+    return block(
+      "navigation",
+      { overlayMenu: "mobile" },
+      [
+        navigationLink("Essays", "/category/essays/"),
+        navigationLink("Signals", "/category/signals/"),
+        navigationLink("Mixtapes", "/category/mixtapes/"),
+        navigationLink("City Notes", "/category/city-notes/"),
+        navigationLink("About", "/about/"),
+        navigationLink("Subscribe", "/subscribe/")
+      ].join("\n")
+    );
+  }
+
   return block(
     "navigation",
     { overlayMenu: "mobile" },
@@ -853,4 +949,21 @@ function block(name: string, attrs: Record<string, unknown> = {}, inner?: string
   }
 
   return `<!-- wp:${name}${attrsText} -->\n${inner}\n<!-- /wp:${name} -->`;
+}
+
+function isMidnightSignal(blueprint: Blueprint): boolean {
+  return slugify(blueprint.metadata.slug ?? blueprint.metadata.name) === "midnight-signal";
+}
+
+function themeInitials(blueprint: Blueprint): string {
+  if (isMidnightSignal(blueprint)) {
+    return "M";
+  }
+
+  return blueprint.metadata.name
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((word) => word[0]?.toUpperCase() ?? "")
+    .join("")
+    .slice(0, 3) || "BS";
 }

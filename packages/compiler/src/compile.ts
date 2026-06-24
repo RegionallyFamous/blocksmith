@@ -75,7 +75,7 @@ export function compileBlueprint(input: Blueprint): CompileResult {
   }
 
   files["assets/css/blocksmith.css"] = renderBaseCss(blueprint);
-  files["playground/blueprint.json"] = renderPlaygroundBlueprint(themeSlug, blueprint.metadata.name);
+  files["playground/blueprint.json"] = renderPlaygroundBlueprint(themeSlug, blueprint.metadata.name, blueprint);
 
   return { files, diagnostics, themeSlug };
 }
@@ -151,7 +151,7 @@ function defaultTemplates(blueprint: Blueprint): Record<string, BlueprintTemplat
     { kind: "postContent" },
     {
       kind: "postGrid",
-      title: "Related dispatches",
+      title: isMidnightSignal(blueprint) ? "Related signals" : "Related dispatches",
       query: { perPage: 4 }
     },
     { kind: "comments" },
@@ -249,10 +249,10 @@ function defaultTemplates(blueprint: Blueprint): Record<string, BlueprintTemplat
         { kind: "notFound" },
         {
           kind: "postGrid",
-          title: "Latest dispatches",
+          title: isMidnightSignal(blueprint) ? "Latest signals" : "Latest dispatches",
           cta: {
-            label: "View more stories ->",
-            url: "/category/dispatch/"
+            label: isMidnightSignal(blueprint) ? "View more transmissions ->" : "View more stories ->",
+            url: isMidnightSignal(blueprint) ? "/category/essays/" : "/category/dispatch/"
           },
           query: { perPage: 4 }
         },
@@ -358,6 +358,29 @@ add_filter(
 \t10,
 \t2
 );
+
+add_filter(
+\t'query_loop_block_query_vars',
+\tstatic function ( array $query, WP_Block $block ): array {
+\t\tif ( ! is_singular( 'post' ) ) {
+\t\t\treturn $query;
+\t\t}
+
+\t\t$current_id = get_queried_object_id();
+
+\t\tif ( $current_id <= 0 ) {
+\t\t\treturn $query;
+\t\t}
+
+\t\t$excluded = isset( $query['post__not_in'] ) && is_array( $query['post__not_in'] ) ? $query['post__not_in'] : array();
+\t\t$excluded[] = $current_id;
+\t\t$query['post__not_in'] = array_values( array_unique( array_map( 'intval', $excluded ) ) );
+
+\t\treturn $query;
+\t},
+\t10,
+\t2
+);
 `;
 }
 
@@ -384,19 +407,25 @@ See resources.json for bundled asset provenance.
 
 function renderBaseCss(blueprint: Blueprint): string {
   const tokens = blueprint.tokens;
+  const signalTheme = isMidnightSignal(blueprint);
   const heroAsset = (blueprint.assets ?? []).find((asset) => asset.role === "hero");
-  const archiveArtAsset = (blueprint.assets ?? []).find((asset) => asset.path.includes("archive-map"));
-  const notFoundArtAsset = (blueprint.assets ?? []).find((asset) => asset.path.includes("not-found-lantern"));
-  const headerBirdAsset = (blueprint.assets ?? []).find((asset) => asset.path.includes("header-bird"));
+  const archiveArtAsset = (blueprint.assets ?? []).find((asset) => asset.path.includes("archive-map") || asset.path.includes("signal-map"));
+  const notFoundArtAsset = (blueprint.assets ?? []).find((asset) => asset.path.includes("not-found-lantern") || asset.path.includes("not-found-signal"));
+  const headerBirdAsset = (blueprint.assets ?? []).find((asset) => asset.path.includes("header-bird") || asset.path.includes("newsletter-art"));
   const editorPortraitAsset = (blueprint.assets ?? []).find((asset) => asset.path.includes("editor-portrait"));
   const townSketchAsset = (blueprint.assets ?? []).find((asset) => asset.path.includes("town-sketch"));
   const newsletterAsset = (blueprint.assets ?? []).find((asset) => asset.path.includes("newsletter-art"));
-  const featureCardAssets = ["story-market-day", "story-teacher", "story-brass-band"].map((needle) =>
+  const featureCardNeedles = signalTheme ? ["story-corner-store", "story-window-screens", "story-radio-desk"] : ["story-market-day", "story-teacher", "story-brass-band"];
+  const featureCardAssets = featureCardNeedles.map((needle) =>
     (blueprint.assets ?? []).find((asset) => asset.path.includes(needle))
   );
   const fontFaces = renderFontFaces(blueprint);
   const heroArtBackground = heroAsset
-    ? `background-image:
+    ? signalTheme
+      ? `background-image:
+    linear-gradient(90deg, rgba(8, 10, 13, 0.95) 0%, rgba(8, 10, 13, 0.35) 44%, rgba(8, 10, 13, 0.82) 100%),
+    url("${cssAssetUrl(heroAsset.path)}");`
+      : `background-image:
     linear-gradient(90deg, rgba(255, 253, 247, 0.18), rgba(255, 253, 247, 0)),
     url("${cssAssetUrl(heroAsset.path)}");`
     : `background-image:
@@ -2087,6 +2116,427 @@ function renderBaseCss(blueprint: Blueprint): string {
     padding: var(--wp--preset--spacing--lg) var(--wp--preset--spacing--sm);
   }
 }
+${signalTheme ? `
+/* Midnight Signal: Imagegen-derived dark editorial blog system. */
+body {
+  background:
+    radial-gradient(circle at 70% 0%, rgba(0, 216, 255, 0.12), transparent 32rem),
+    radial-gradient(circle at 16% 18%, rgba(255, 79, 216, 0.08), transparent 26rem),
+    linear-gradient(90deg, rgba(103, 232, 255, 0.035) 0 1px, transparent 1px 100%),
+    linear-gradient(0deg, rgba(184, 255, 61, 0.022) 0 1px, transparent 1px 100%),
+    var(--wp--preset--color--base, ${tokens.color.base});
+  background-size: auto, auto, 96px 96px, 96px 96px, auto;
+}
+
+.wp-site-blocks {
+  padding-left: clamp(1rem, 3vw, 2rem);
+  padding-right: clamp(1rem, 3vw, 2rem);
+}
+
+.blocksmith-header,
+.blocksmith-header-signal {
+  background: rgba(8, 10, 13, 0.92);
+  border-bottom-color: rgba(103, 232, 255, 0.18);
+  box-shadow: 0 1px 0 rgba(103, 232, 255, 0.12);
+  color: var(--wp--preset--color--contrast, ${tokens.color.contrast});
+}
+
+.blocksmith-header-top {
+  background: transparent;
+  border-bottom: 1px solid rgba(103, 232, 255, 0.16);
+  color: var(--wp--preset--color--contrast, ${tokens.color.contrast});
+  font-family: var(--wp--preset--font-family--body);
+  letter-spacing: 0.08em;
+}
+
+.blocksmith-masthead-row {
+  grid-template-columns: minmax(10rem, 0.8fr) minmax(22rem, 1.35fr) minmax(10rem, 0.8fr);
+  min-height: 7rem;
+}
+
+.blocksmith-masthead-note,
+.blocksmith-masthead-ornament p,
+.blocksmith-nav-row {
+  border-color: rgba(103, 232, 255, 0.16);
+}
+
+.blocksmith-wordmark span,
+.blocksmith-wordmark em,
+.blocksmith-masthead-note,
+.blocksmith-masthead-ornament p,
+.blocksmith-site-nav,
+.blocksmith-site-search {
+  color: var(--wp--preset--color--contrast, ${tokens.color.contrast});
+}
+
+.blocksmith-wordmark strong {
+  color: var(--wp--preset--color--contrast, ${tokens.color.contrast});
+  font-size: clamp(4.6rem, 8vw, 7.4rem);
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.blocksmith-wordmark span,
+.blocksmith-wordmark em,
+.blocksmith-mini-label,
+.blocksmith-card-kicker,
+.blocksmith-eyebrow,
+.blocksmith-footer-label,
+.blocksmith-template-kicker,
+.blocksmith-breadcrumbs,
+.blocksmith-post-card-terms,
+.blocksmith-post-meta-list,
+.blocksmith-post-share {
+  color: var(--wp--preset--color--primary, ${tokens.color.primary});
+  font-family: var(--wp--preset--font-family--body);
+  letter-spacing: 0.08em;
+}
+
+.blocksmith-masthead-ornament {
+  grid-template-columns: 4.6rem minmax(0, 1fr);
+}
+
+.blocksmith-header-bird {
+  background-blend-mode: screen;
+  border: 1px solid rgba(103, 232, 255, 0.25);
+  height: 4.2rem;
+  mix-blend-mode: normal;
+  opacity: 0.75;
+}
+
+.blocksmith-site-search .wp-block-search__inside-wrapper,
+.blocksmith-archive-search .wp-block-search__inside-wrapper,
+.blocksmith-recovery-panel .wp-block-search__inside-wrapper,
+.blocksmith-query-empty .wp-block-search__inside-wrapper {
+  background: rgba(20, 25, 34, 0.72);
+  border-color: rgba(103, 232, 255, 0.28);
+}
+
+.blocksmith-site-search input,
+.blocksmith-archive-search input,
+.blocksmith-recovery-panel input,
+.blocksmith-query-empty input {
+  background: transparent;
+  color: var(--wp--preset--color--contrast, ${tokens.color.contrast});
+}
+
+.blocksmith-hero-signal {
+  background: rgba(16, 20, 27, 0.72);
+  border: 1px solid rgba(103, 232, 255, 0.22);
+  border-radius: 0;
+  margin-bottom: var(--wp--preset--spacing--lg);
+  overflow: hidden;
+}
+
+.blocksmith-hero-signal .blocksmith-hero-grid {
+  border: 0;
+  grid-template-columns: minmax(17rem, 0.72fr) minmax(0, 1fr) minmax(14rem, 0.36fr);
+  min-height: 36rem;
+}
+
+.blocksmith-hero-signal .blocksmith-hero-copy {
+  align-self: center;
+  padding: var(--wp--preset--spacing--xl) var(--wp--preset--spacing--lg);
+  position: relative;
+  z-index: 1;
+}
+
+.blocksmith-hero-signal h1 {
+  color: var(--wp--preset--color--contrast, ${tokens.color.contrast});
+  font-size: clamp(4rem, 6.6vw, 7.2rem);
+  line-height: 0.9;
+  margin-bottom: var(--wp--preset--spacing--md);
+}
+
+.blocksmith-hero-signal p:not(.blocksmith-eyebrow) {
+  color: rgba(245, 247, 239, 0.84);
+  font-size: 1.1rem;
+  max-width: 26rem;
+}
+
+.blocksmith-hero-signal .blocksmith-hero-art {
+  border-color: rgba(103, 232, 255, 0.16);
+  background-position: center;
+  min-height: 100%;
+}
+
+.blocksmith-hero-signal .blocksmith-hero-art span {
+  background: rgba(8, 10, 13, 0.82);
+  border: 1px solid rgba(103, 232, 255, 0.34);
+  color: var(--wp--preset--color--secondary, ${tokens.color.secondary ?? tokens.color.primary});
+  font-family: var(--wp--preset--font-family--body);
+  letter-spacing: 0.08em;
+}
+
+.blocksmith-issue-log {
+  align-self: center;
+  background: rgba(8, 10, 13, 0.68);
+  border-left: 1px solid rgba(103, 232, 255, 0.2);
+  display: grid;
+  gap: 0;
+  margin-right: var(--wp--preset--spacing--md);
+}
+
+.blocksmith-issue-log .blocksmith-mini-label {
+  border-bottom: 1px solid rgba(103, 232, 255, 0.18);
+  margin: 0;
+  padding: var(--wp--preset--spacing--sm);
+}
+
+.blocksmith-issue-log a {
+  border-bottom: 1px solid rgba(103, 232, 255, 0.14);
+  color: var(--wp--preset--color--contrast, ${tokens.color.contrast});
+  display: grid;
+  gap: 0.35rem;
+  grid-template-columns: 2.2rem minmax(0, 1fr) auto;
+  padding: var(--wp--preset--spacing--sm);
+  text-decoration: none;
+}
+
+.blocksmith-issue-log span,
+.blocksmith-issue-log em {
+  color: rgba(245, 247, 239, 0.58);
+  font-size: 0.72rem;
+  font-style: normal;
+  text-transform: uppercase;
+}
+
+.blocksmith-issue-log strong {
+  font-size: 0.86rem;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.blocksmith-issue-log .blocksmith-issue-link {
+  color: var(--wp--preset--color--secondary, ${tokens.color.secondary ?? tokens.color.primary});
+  display: block;
+  font-weight: 900;
+}
+
+.blocksmith-feature-grid .wp-block-columns,
+.blocksmith-query-home .wp-block-post-template,
+.blocksmith-query-archive .wp-block-post-template,
+.blocksmith-query-related .wp-block-post-template {
+  gap: clamp(1rem, 2vw, 1.5rem) !important;
+}
+
+.blocksmith-card,
+.blocksmith-post-card,
+.blocksmith-author-card,
+.blocksmith-story-card,
+.blocksmith-query-empty,
+.blocksmith-recovery-panel,
+.blocksmith-archive-tools {
+  background: rgba(16, 20, 27, 0.78);
+  border-color: rgba(103, 232, 255, 0.2);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.24);
+  color: var(--wp--preset--color--contrast, ${tokens.color.contrast});
+}
+
+.blocksmith-card::before {
+  height: 12.2rem;
+}
+
+.blocksmith-card h3,
+.blocksmith-post-card h3,
+.blocksmith-note-quote h2,
+.blocksmith-footer h2,
+.blocksmith-author-card h2,
+.blocksmith-story-card h2,
+.blocksmith-post-content h2,
+.blocksmith-recovery-panel h2,
+.blocksmith-query-empty h2 {
+  color: var(--wp--preset--color--contrast, ${tokens.color.contrast});
+}
+
+.blocksmith-card p,
+.blocksmith-post-card p,
+.blocksmith-author-card p,
+.blocksmith-story-card p,
+.blocksmith-note-quote p,
+.blocksmith-footer p,
+.blocksmith-post-content p,
+.blocksmith-query-empty p {
+  color: rgba(245, 247, 239, 0.78);
+}
+
+.blocksmith-card-link,
+.blocksmith-section-heading a,
+.blocksmith-inline-action,
+.blocksmith-post-card .wp-block-post-excerpt__more-link {
+  color: var(--wp--preset--color--primary, ${tokens.color.primary});
+}
+
+.blocksmith-section-heading {
+  border-color: rgba(103, 232, 255, 0.18);
+}
+
+.blocksmith-section-heading h2 {
+  color: var(--wp--preset--color--contrast, ${tokens.color.contrast});
+  font-family: var(--wp--preset--font-family--body);
+  letter-spacing: 0.08em;
+}
+
+.blocksmith-post-card-media img,
+.blocksmith-featured-image img,
+.blocksmith-archive-art,
+.blocksmith-not-found-art {
+  filter: saturate(1.05) contrast(1.05);
+}
+
+.blocksmith-post-card {
+  transition: border-color 160ms ease, transform 160ms ease;
+}
+
+.blocksmith-post-card:hover {
+  border-color: rgba(0, 216, 255, 0.54);
+  transform: translateY(-2px);
+}
+
+.blocksmith-editor-note {
+  background:
+    radial-gradient(circle at 82% 46%, rgba(0, 216, 255, 0.13), transparent 24rem),
+    linear-gradient(90deg, rgba(16, 20, 27, 0.96), rgba(8, 10, 13, 0.96));
+  border-color: rgba(103, 232, 255, 0.18);
+}
+
+.blocksmith-note-mark {
+  border: 1px solid rgba(0, 216, 255, 0.54);
+  box-shadow: 0 0 0 1rem rgba(0, 216, 255, 0.035);
+}
+
+.blocksmith-note-aside {
+  border-color: rgba(0, 216, 255, 0.36);
+  transform: none;
+}
+
+.blocksmith-note-aside span {
+  color: var(--wp--preset--color--primary, ${tokens.color.primary});
+}
+
+.blocksmith-cta {
+  border: 1px solid rgba(103, 232, 255, 0.2);
+  color: var(--wp--preset--color--contrast, ${tokens.color.contrast});
+  margin-bottom: var(--wp--preset--spacing--md);
+  min-height: 12rem;
+}
+
+.blocksmith-cta .wp-block-button__link {
+  background: transparent;
+  border: 1px solid var(--wp--preset--color--primary, ${tokens.color.primary});
+  color: var(--wp--preset--color--primary, ${tokens.color.primary});
+}
+
+.blocksmith-archive-header,
+.blocksmith-post-header,
+.blocksmith-not-found {
+  border-color: rgba(103, 232, 255, 0.18);
+}
+
+.blocksmith-archive-header h1,
+.blocksmith-post-header h1,
+.blocksmith-not-found h1 {
+  color: var(--wp--preset--color--contrast, ${tokens.color.contrast});
+}
+
+.blocksmith-archive-art,
+.blocksmith-not-found-art,
+.blocksmith-featured-image img {
+  border-color: rgba(103, 232, 255, 0.22);
+  border-radius: 0;
+}
+
+.blocksmith-topic-links a {
+  background: rgba(16, 20, 27, 0.78);
+  border-color: rgba(103, 232, 255, 0.2);
+  color: var(--wp--preset--color--contrast, ${tokens.color.contrast});
+}
+
+.blocksmith-post-meta-rail {
+  border-color: rgba(103, 232, 255, 0.18);
+}
+
+.blocksmith-featured-image-row {
+  align-items: stretch;
+}
+
+.blocksmith-featured-image-rail {
+  background:
+    linear-gradient(180deg, rgba(0, 216, 255, 0.46), rgba(255, 79, 216, 0.24)),
+    rgba(16, 20, 27, 0.8);
+  border: 1px solid rgba(103, 232, 255, 0.2);
+  min-height: 100%;
+}
+
+.blocksmith-featured-image-row .blocksmith-featured-image {
+  margin-bottom: 0;
+}
+
+.blocksmith-post-content blockquote {
+  border-color: var(--wp--preset--color--primary, ${tokens.color.primary});
+  color: var(--wp--preset--color--contrast, ${tokens.color.contrast});
+}
+
+.blocksmith-post-content > :first-child::first-letter {
+  background: var(--wp--preset--color--primary, ${tokens.color.primary});
+  color: var(--wp--preset--color--base, ${tokens.color.base});
+}
+
+.blocksmith-footer {
+  background:
+    radial-gradient(circle at 84% 24%, rgba(0, 216, 255, 0.1), transparent 20rem),
+    var(--wp--preset--color--base, ${tokens.color.base});
+  border-top: 1px solid rgba(103, 232, 255, 0.18);
+  color: var(--wp--preset--color--contrast, ${tokens.color.contrast});
+}
+
+.blocksmith-footer-card {
+  background: rgba(16, 20, 27, 0.86);
+  border-color: rgba(103, 232, 255, 0.22);
+}
+
+.blocksmith-footer-bottom {
+  border-top-color: rgba(103, 232, 255, 0.18);
+}
+
+@media (max-width: 980px) {
+  .blocksmith-hero-signal .blocksmith-hero-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .blocksmith-issue-log {
+    border-left: 0;
+    margin: 0;
+  }
+
+  .blocksmith-hero-signal .blocksmith-hero-art {
+    min-height: 20rem;
+    order: -1;
+  }
+}
+
+@media (max-width: 760px) {
+  .blocksmith-wordmark strong {
+    font-size: 2.25rem;
+  }
+
+  .blocksmith-hero-signal h1 {
+    font-size: 3rem;
+  }
+
+  .blocksmith-hero-signal .blocksmith-hero-copy {
+    padding: var(--wp--preset--spacing--md);
+  }
+
+  .blocksmith-issue-log a {
+    grid-template-columns: 2rem minmax(0, 1fr);
+  }
+
+  .blocksmith-issue-log em {
+    grid-column: 2;
+  }
+}
+` : ""}
 `;
 }
 
@@ -2128,7 +2578,7 @@ function cssAssetUrl(themePath: string): string {
   return themePath;
 }
 
-function renderPlaygroundBlueprint(themeSlug: string, siteTitle: string): string {
+function renderPlaygroundBlueprint(themeSlug: string, siteTitle: string, blueprint: Blueprint): string {
   return stableJson({
     $schema: "https://playground.wordpress.net/blueprint-schema.json",
     landingPage: "/",
@@ -2165,13 +2615,21 @@ function renderPlaygroundBlueprint(themeSlug: string, siteTitle: string): string
       },
       {
         step: "runPHP",
-        code: renderStarterContentPhp()
+        code: renderStarterContentPhp(blueprint)
       }
     ]
   });
 }
 
-function renderStarterContentPhp(): string {
+function renderStarterContentPhp(blueprint: Blueprint): string {
+  if (isMidnightSignal(blueprint)) {
+    return renderMidnightSignalStarterContentPhp();
+  }
+
+  return renderRegionallyFamousStarterContentPhp();
+}
+
+function renderRegionallyFamousStarterContentPhp(): string {
   return `<?php
 require '/wordpress/wp-load.php';
 require_once ABSPATH . 'wp-admin/includes/file.php';
@@ -2449,4 +2907,276 @@ update_option('permalink_structure', '/story/%postname%/');
 flush_rewrite_rules(true);
 wp_cache_flush();
 `;
+}
+
+function renderMidnightSignalStarterContentPhp(): string {
+  return `<?php
+require '/wordpress/wp-load.php';
+require_once ABSPATH . 'wp-admin/includes/file.php';
+require_once ABSPATH . 'wp-admin/includes/image.php';
+
+$existing = get_posts(array(
+    'numberposts' => -1,
+    'post_type' => array('post', 'page', 'attachment'),
+    'post_status' => 'any',
+));
+
+foreach ($existing as $post) {
+    wp_delete_post($post->ID, true);
+}
+
+$author = get_user_by('login', 'admin');
+$author_id = $author ? (int) $author->ID : 1;
+
+update_option('show_avatars', 0);
+
+if (!function_exists('blocksmith_create_attachment_from_theme_asset')) {
+function blocksmith_create_attachment_from_theme_asset(string $relative_path, string $title, int $author_id): int {
+    $theme_path = get_theme_file_path($relative_path);
+
+    if (!file_exists($theme_path)) {
+        return 0;
+    }
+
+    $upload = wp_upload_bits(basename($relative_path), null, file_get_contents($theme_path));
+
+    if (!empty($upload['error']) || empty($upload['file'])) {
+        return 0;
+    }
+
+    $filetype = wp_check_filetype($upload['file']);
+    $attachment_id = wp_insert_attachment(array(
+        'post_mime_type' => $filetype['type'] ?: 'image/jpeg',
+        'post_title' => $title,
+        'post_content' => '',
+        'post_status' => 'inherit',
+        'post_author' => $author_id,
+    ), $upload['file']);
+
+    if (is_wp_error($attachment_id)) {
+        return 0;
+    }
+
+    $metadata = wp_generate_attachment_metadata($attachment_id, $upload['file']);
+    wp_update_attachment_metadata($attachment_id, $metadata);
+    update_post_meta($attachment_id, '_wp_attachment_image_alt', $title);
+
+    return (int) $attachment_id;
+}
+}
+
+if (!function_exists('blocksmith_set_featured_image_from_theme_asset')) {
+function blocksmith_set_featured_image_from_theme_asset(int $post_id, string $relative_path, string $title, int $author_id): void {
+    $attachment_id = blocksmith_create_attachment_from_theme_asset($relative_path, $title, $author_id);
+
+    if ($attachment_id > 0) {
+        set_post_thumbnail($post_id, $attachment_id);
+    }
+}
+}
+
+if (!function_exists('blocksmith_signal_content')) {
+function blocksmith_signal_content(array $story): string {
+    $excerpt = esc_html($story['excerpt']);
+    return '<p>' . $excerpt . '</p>'
+        . '<h2>The quiet layer</h2>'
+        . '<p>After the feed slows down, the city becomes easier to read. Storefront light, apartment windows, station noise, and half-finished notes start to feel like a second interface.</p>'
+        . '<blockquote><p>The useful signal is rarely loud. It waits until you have enough attention to meet it.</p></blockquote>'
+        . '<h2>Field notes</h2>'
+        . '<p>This piece follows small patterns: how people move when nobody is performing, how tools shape attention, and how memory survives inside ordinary routines.</p>'
+        . '<h2>What to keep</h2>'
+        . '<p>The lesson is not nostalgia. It is choosing slower inputs, clearer rooms, and humane systems that leave space for judgment.</p>'
+        . '<h2>Further listening</h2>'
+        . '<ul><li>Best read: after 10 p.m.</li><li>Keep open: one notebook, one window, one song</li><li>Nearby signal: sidewalks, radio hiss, private websites</li></ul>';
+}
+}
+
+$pages = array(
+    array('title' => 'Midnight Signal Home', 'slug' => 'home', 'content' => '<p>The front page uses the theme front-page.html template.</p>'),
+    array('title' => 'Archive', 'slug' => 'archive', 'content' => '<p>Browse the live WordPress loops for essays, signals, city notes, mixtapes, and longform posts.</p>'),
+    array('title' => 'About Midnight Signal', 'slug' => 'about', 'content' => '<p>Midnight Signal is an independent blog for late-night essays about culture, software, cities, sound, attention, and the private internet.</p>'),
+    array('title' => 'Subscribe', 'slug' => 'subscribe', 'content' => '<p>Get new transmissions in your inbox. No growth hacks, no noise, just useful notes.</p>'),
+    array('title' => 'Contact', 'slug' => 'contact', 'content' => '<p>Send notes, corrections, mixtape ideas, and strange useful links to the late desk.</p>'),
+    array('title' => 'Privacy Policy', 'slug' => 'privacy-policy', 'content' => '<p>This sample privacy policy exists so the privacy-policy.html template can be verified in Playground.</p>'),
+);
+
+$page_ids = array();
+foreach ($pages as $page) {
+    $page_id = wp_insert_post(array(
+        'post_title' => $page['title'],
+        'post_name' => $page['slug'],
+        'post_content' => $page['content'],
+        'post_status' => 'publish',
+        'post_type' => 'page',
+        'post_author' => $author_id,
+    ));
+
+    if (!is_wp_error($page_id)) {
+        $page_ids[$page['slug']] = (int) $page_id;
+    }
+}
+
+if (!empty($page_ids['privacy-policy'])) {
+    update_option('wp_page_for_privacy_policy', $page_ids['privacy-policy']);
+}
+
+$category_slugs = array(
+    'Essays' => 'essays',
+    'City Notes' => 'city-notes',
+    'Signals' => 'signals',
+    'Mixtapes' => 'mixtapes',
+    'Longform' => 'longform',
+);
+
+foreach ($category_slugs as $name => $slug) {
+    if (!term_exists($slug, 'category')) {
+        wp_insert_term($name, 'category', array('slug' => $slug));
+    }
+}
+
+$tag_slugs = array(
+    'Night' => 'night',
+    'Culture' => 'culture',
+    'Radio' => 'radio',
+    'City' => 'city',
+    'Internet' => 'internet',
+    'Attention' => 'attention',
+);
+
+foreach ($tag_slugs as $name => $slug) {
+    if (!term_exists($slug, 'post_tag')) {
+        wp_insert_term($name, 'post_tag', array('slug' => $slug));
+    }
+}
+
+$stories = array(
+    array(
+        'title' => 'The city sounds different after the apps close',
+        'slug' => 'the-city-sounds-different-after-the-apps-close',
+        'excerpt' => 'A late walk, a wet bridge, and the relief of hearing your own thoughts again.',
+        'categories' => array('Essays', 'City Notes'),
+        'tags' => array('Night', 'City', 'Attention'),
+        'image' => 'assets/images/midnight-signal/hero-night-bridge.jpg',
+        'date' => '2026-06-18 22:17:00',
+    ),
+    array(
+        'title' => 'A tiny guide to keeping a private internet',
+        'slug' => 'a-tiny-guide-to-keeping-a-private-internet',
+        'excerpt' => 'Bookmarks, small sites, and the personal web as a room you can still arrange.',
+        'categories' => array('Essays', 'Signals'),
+        'tags' => array('Internet', 'Culture', 'Attention'),
+        'image' => 'assets/images/midnight-signal/story-radio-desk.jpg',
+        'date' => '2026-06-14 21:40:00',
+    ),
+    array(
+        'title' => 'Corner store neon and other weather reports',
+        'slug' => 'corner-store-neon-and-other-weather-reports',
+        'excerpt' => 'The corner store still remembers who needed milk, batteries, coffee, and a minute.',
+        'categories' => array('City Notes'),
+        'tags' => array('Night', 'City', 'Culture'),
+        'image' => 'assets/images/midnight-signal/story-corner-store.jpg',
+        'date' => '2026-06-12 23:05:00',
+    ),
+    array(
+        'title' => 'Songs for walking home through light rain',
+        'slug' => 'songs-for-walking-home-through-light-rain',
+        'excerpt' => 'Ten tracks for a sidewalk, a hood up, and the exact moment the city softens.',
+        'categories' => array('Mixtapes', 'City Notes'),
+        'tags' => array('Night', 'Culture', 'City'),
+        'image' => 'assets/images/midnight-signal/story-riverwalk.jpg',
+        'date' => '2026-06-06 23:31:00',
+    ),
+    array(
+        'title' => 'What apartment windows teach about attention',
+        'slug' => 'what-apartment-windows-teach-about-attention',
+        'excerpt' => 'Screens glow, lamps dim, and a building becomes a diagram of modern focus.',
+        'categories' => array('Longform', 'Essays'),
+        'tags' => array('Night', 'Attention', 'City'),
+        'image' => 'assets/images/midnight-signal/story-window-screens.jpg',
+        'date' => '2026-06-03 22:50:00',
+    ),
+    array(
+        'title' => 'The useful magic of bad reception',
+        'slug' => 'the-useful-magic-of-bad-reception',
+        'excerpt' => 'Static, buffers, dropouts, and the strange patience that returns when signal fails.',
+        'categories' => array('Signals', 'Essays'),
+        'tags' => array('Radio', 'Internet', 'Attention'),
+        'image' => 'assets/images/midnight-signal/story-radio-desk.jpg',
+        'date' => '2026-05-29 21:05:00',
+    ),
+    array(
+        'title' => 'Notes from a city that refuses to sleep',
+        'slug' => 'notes-from-a-city-that-refuses-to-sleep',
+        'excerpt' => 'The night shift has its own civics: delivery bikes, nurses, cleaners, and quiet repair.',
+        'categories' => array('City Notes', 'Longform'),
+        'tags' => array('Night', 'City', 'Culture'),
+        'image' => 'assets/images/midnight-signal/story-corner-store.jpg',
+        'date' => '2026-05-24 22:10:00',
+    ),
+    array(
+        'title' => 'A mixtape for deleting the app',
+        'slug' => 'a-mixtape-for-deleting-the-app',
+        'excerpt' => 'Soft drums, clean breaks, and songs that make your phone feel less important.',
+        'categories' => array('Mixtapes', 'Signals'),
+        'tags' => array('Culture', 'Internet', 'Attention'),
+        'image' => 'assets/images/midnight-signal/story-riverwalk.jpg',
+        'date' => '2026-05-20 20:45:00',
+    ),
+);
+
+foreach ($stories as $story) {
+    $post_id = wp_insert_post(array(
+        'post_title' => $story['title'],
+        'post_name' => $story['slug'],
+        'post_excerpt' => $story['excerpt'],
+        'post_content' => blocksmith_signal_content($story),
+        'post_status' => 'publish',
+        'post_type' => 'post',
+        'post_date' => $story['date'],
+        'post_author' => $author_id,
+    ));
+
+    if (!is_wp_error($post_id)) {
+        $category_ids = array();
+        foreach ($story['categories'] as $category) {
+            $term = term_exists($category_slugs[$category] ?? '', 'category');
+            $term_id = is_array($term) ? (int) $term['term_id'] : (int) $term;
+            if ($term_id > 0) {
+                $category_ids[] = $term_id;
+            }
+        }
+
+        if (!empty($category_ids)) {
+            wp_set_post_terms($post_id, $category_ids, 'category');
+        }
+
+        $tag_ids = array();
+        foreach ($story['tags'] as $tag) {
+            $term = term_exists($tag_slugs[$tag] ?? '', 'post_tag');
+            $term_id = is_array($term) ? (int) $term['term_id'] : (int) $term;
+            if ($term_id > 0) {
+                $tag_ids[] = $term_id;
+            }
+        }
+
+        if (!empty($tag_ids)) {
+            wp_set_post_terms($post_id, $tag_ids, 'post_tag');
+        }
+
+        if (!empty($story['image'])) {
+            blocksmith_set_featured_image_from_theme_asset((int) $post_id, $story['image'], $story['title'], $author_id);
+        }
+    }
+}
+
+global $wp_rewrite;
+$wp_rewrite->set_permalink_structure('/story/%postname%/');
+update_option('permalink_structure', '/story/%postname%/');
+flush_rewrite_rules(true);
+wp_cache_flush();
+`;
+}
+
+function isMidnightSignal(blueprint: Blueprint): boolean {
+  return slugify(blueprint.metadata.slug ?? blueprint.metadata.name) === "midnight-signal";
 }

@@ -96,6 +96,69 @@ Constraints: no readable text, no brand marks, no watermark, no distorted hands/
 
 Production rule: if an Imagegen route comp shows photography, illustration, ornament, portraiture, or map texture as a structural part of the layout, generate or supply that asset separately and wire it into WordPress-native surfaces. Use `core/post-featured-image` for post media, imported Media Library attachments for seeded demos, and CSS backgrounds only for decorative route art that is not content. Route-comp fidelity requires both structural markup and asset parity: if the comp has a masthead ornament, editor portrait, illustrated newsletter band, or collage strip, those pieces must exist as real optimized assets in the theme.
 
+## Midnight Signal full-page layout comp
+
+Generated with the built-in Imagegen tool and saved as `docs/assets/route-comps/midnight-signal-home.png`.
+
+This is a design-direction artifact for a complete dark blog theme. The compiled theme rebuilds the comp as WordPress-native templates, Query Loop output, post featured images, archive/search surfaces, and seeded starter content.
+
+Prompt:
+
+```text
+Use case: ui-mockup
+Asset type: full-page WordPress block theme homepage design comp
+Primary request: Design a complete desktop homepage mockup for a WordPress block theme called Midnight Signal. This is a visual direction comp for layout, style, and taste, not a final screenshot.
+Scene/backdrop: dark editorial zine/blog for late-night essays about culture, software, cities, music, sound, attention, and the private internet.
+Subject: a polished independent blog theme with a nocturnal voice, issue-log hero, dense story cards, and strong route furniture for real WordPress loops.
+Style/medium: high-fidelity web design mockup, premium dark editorial magazine aesthetic, WordPress block theme plausible, not SaaS, not a landing page.
+Composition/framing: tall desktop page screenshot, 1440px wide feel. Include: compact top nav, large masthead, asymmetric hero with headline, cinematic night image, issue-log sidebar, three feature cards, latest posts grid, editor transmission band, newsletter/signal band, and footer.
+Lighting/mood: nocturnal, electric, quiet, reflective, high-contrast but readable.
+Color palette: near-black base, off-white text, cyan signal accents, acid green CTAs, small magenta highlights, restrained blue-black surfaces.
+Typography: high-contrast editorial serif display for headlines, squared readable sans for body and labels. Strong hierarchy, no cramped text.
+Materials/textures: subtle scanlines, radio/signal diagrams, rainy city photography, fine borders, quiet shadows.
+Text: Use short readable labels where possible: "Midnight Signal", "Essays after the feed goes quiet", "Latest transmissions", "Field notes", "Signals", "Mixtapes". Keep text minimal and legible.
+Constraints: must feel like a complete tasteful blog layout, not an asset background. Avoid generic dark template, avoid purple gradient dominance, avoid fake browser chrome, no brand logos, no watermark, no one-off random colors, no decorative UI that cannot become real WordPress blocks.
+```
+
+Extraction notes from the selected comp:
+
+- Home: masthead, issue-log hero, feature-card trio, live latest-post grid, editor transmission, newsletter band, and footer all became block-template surfaces.
+- Loop behavior: homepage uses a non-inherited Query Loop; category, tag, author, date, archive, home, and search templates use inherited loops.
+- Single behavior: post header, featured image rail, article/sidebar layout, comments, and a Query Loop filtered by WordPress to exclude the current post.
+- Search and 404: header/search blocks are real forms; `/?p=999999` and `/?page_id=999999` exercise the 404 template in Playground.
+- Mobile: the hero restacks to image, title, CTA, and issue log with no horizontal overflow.
+
+## Midnight Signal production image set
+
+Generated with the built-in Imagegen tool, copied into `examples/assets/images/midnight-signal/`, optimized to JPG, and consumed by the compiled theme. Starter content imports story images into the WordPress media library and assigns them as featured images, so Query Loop cards, archives, search results, and single templates display real WordPress media.
+
+Saved assets:
+
+- `hero-night-bridge.jpg`: homepage hero and lead story featured image.
+- `story-corner-store.jpg`: featured image for "Corner store neon and other weather reports".
+- `story-window-screens.jpg`: featured image for "What apartment windows teach about attention".
+- `story-radio-desk.jpg`: featured image for "A tiny guide to keeping a private internet" and signal essays.
+- `story-riverwalk.jpg`: featured image for mixtape/city-walk posts.
+- `editor-portrait.jpg`: editor note and article author portrait.
+- `newsletter-art.jpg`: newsletter/signal band and masthead ornament source.
+- `signal-map.jpg`: archive/search sidecar artwork.
+- `not-found-signal.jpg`: 404 recovery artwork.
+
+Prompt patterns:
+
+```text
+Use case: photorealistic-natural
+Asset type: production WordPress theme editorial image
+Primary request: Create a polished nocturnal editorial image for Midnight Signal, a dark independent blog theme. This image will be used as [homepage hero/story featured image/archive support art/404 support art], not as a generic stock placeholder.
+Scene/backdrop: [specific night-city, radio, apartment-window, or signal scene tied to the route/story].
+Subject: [clear subject with no readable text, logos, or fake UI].
+Style/medium: premium dark editorial photography or tactile signal-diagram illustration, cinematic but restrained, plausible for a WordPress block theme.
+Composition/framing: strong crop for responsive web use, clear focal subject, enough dark field for overlays where needed, no browser chrome.
+Lighting/mood: wet city light, cyan reflections, quiet late-night atmosphere, polished but not corporate.
+Color palette: near-black, off-white, cyan, acid green, small magenta highlights.
+Constraints: no readable text, no brand marks, no watermark, no distorted faces/hands, no fake UI, no random colors outside the theme palette.
+```
+
 ## Regionally Famous masthead
 
 Generated with the built-in Imagegen tool and saved as `examples/assets/regionally-famous-masthead.jpg`.

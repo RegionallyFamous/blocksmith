@@ -4,4 +4,8 @@ Open Regionally Famous Dispatch in WordPress Playground:
 
 https://playground.wordpress.net/?blueprint-url=https://raw.githubusercontent.com/RegionallyFamous/blocksmith/main/docs/playground/regionally-famous-dispatch.zip
 
+Open Midnight Signal in WordPress Playground:
+
+https://playground.wordpress.net/?blueprint-url=https://raw.githubusercontent.com/RegionallyFamous/blocksmith/main/docs/playground/midnight-signal.zip
+
 The bundle contains a root `blueprint.json` and a bundled `theme.zip`, so visitors can preview the generated theme without installing it locally. It also installs Theme Check and Create Block Theme in the Playground environment for inspection.

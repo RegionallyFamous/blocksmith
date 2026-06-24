@@ -1,0 +1,210 @@
+apiVersion: blocksmith.io/v0.1
+kind: BlockTheme
+target:
+  wordpress: ">=6.6"
+  themeJson: 3
+  php: ">=8.1"
+  blockProfile: core-stable
+metadata:
+  name: "Midnight Signal"
+  slug: midnight-signal
+  description: "A dark, electric blog theme for late-night essays, city notes, culture, software, and the private internet."
+tasteProfile: magazine-dense
+policy:
+  profile: wporg-block-theme-v1
+  allowRawCode: false
+  allowRemoteAssets: false
+assets:
+  - path: assets/images/midnight-signal/hero-night-bridge.jpg
+    source: assets/images/midnight-signal/hero-night-bridge.jpg
+    role: hero
+    license: AI-generated; human review required before public release
+    author: OpenAI Imagegen
+    generated: true
+  - path: assets/images/midnight-signal/story-corner-store.jpg
+    source: assets/images/midnight-signal/story-corner-store.jpg
+    role: content
+    license: AI-generated; human review required before public release
+    author: OpenAI Imagegen
+    generated: true
+  - path: assets/images/midnight-signal/story-window-screens.jpg
+    source: assets/images/midnight-signal/story-window-screens.jpg
+    role: content
+    license: AI-generated; human review required before public release
+    author: OpenAI Imagegen
+    generated: true
+  - path: assets/images/midnight-signal/story-radio-desk.jpg
+    source: assets/images/midnight-signal/story-radio-desk.jpg
+    role: content
+    license: AI-generated; human review required before public release
+    author: OpenAI Imagegen
+    generated: true
+  - path: assets/images/midnight-signal/story-riverwalk.jpg
+    source: assets/images/midnight-signal/story-riverwalk.jpg
+    role: content
+    license: AI-generated; human review required before public release
+    author: OpenAI Imagegen
+    generated: true
+  - path: assets/images/midnight-signal/editor-portrait.jpg
+    source: assets/images/midnight-signal/editor-portrait.jpg
+    role: content
+    license: AI-generated; human review required before public release
+    author: OpenAI Imagegen
+    generated: true
+  - path: assets/images/midnight-signal/newsletter-art.jpg
+    source: assets/images/midnight-signal/newsletter-art.jpg
+    role: content
+    license: AI-generated; human review required before public release
+    author: OpenAI Imagegen
+    generated: true
+  - path: assets/images/midnight-signal/signal-map.jpg
+    source: assets/images/midnight-signal/signal-map.jpg
+    role: content
+    license: AI-generated; human review required before public release
+    author: OpenAI Imagegen
+    generated: true
+  - path: assets/images/midnight-signal/not-found-signal.jpg
+    source: assets/images/midnight-signal/not-found-signal.jpg
+    role: content
+    license: AI-generated; human review required before public release
+    author: OpenAI Imagegen
+    generated: true
+  - path: assets/fonts/fraunces-700.ttf
+    source: assets/fonts/fraunces-700.ttf
+    role: font
+    license: Open Font License via Google Fonts
+    author: Undercase Type
+    fontFamily: Fraunces
+    fontWeight: "700"
+    fontStyle: normal
+    fontDisplay: swap
+  - path: assets/fonts/fraunces-800.ttf
+    source: assets/fonts/fraunces-800.ttf
+    role: font
+    license: Open Font License via Google Fonts
+    author: Undercase Type
+    fontFamily: Fraunces
+    fontWeight: "800"
+    fontStyle: normal
+    fontDisplay: swap
+  - path: assets/fonts/fraunces-900.ttf
+    source: assets/fonts/fraunces-900.ttf
+    role: font
+    license: Open Font License via Google Fonts
+    author: Undercase Type
+    fontFamily: Fraunces
+    fontWeight: "900"
+    fontStyle: normal
+    fontDisplay: swap
+  - path: assets/fonts/source-sans-3-400.ttf
+    source: assets/fonts/source-sans-3-400.ttf
+    role: font
+    license: Open Font License via Google Fonts
+    author: Adobe
+    fontFamily: Source Sans 3
+    fontWeight: "400"
+    fontStyle: normal
+    fontDisplay: swap
+  - path: assets/fonts/source-sans-3-700.ttf
+    source: assets/fonts/source-sans-3-700.ttf
+    role: font
+    license: Open Font License via Google Fonts
+    author: Adobe
+    fontFamily: Source Sans 3
+    fontWeight: "700"
+    fontStyle: normal
+    fontDisplay: swap
+  - path: assets/fonts/source-sans-3-900.ttf
+    source: assets/fonts/source-sans-3-900.ttf
+    role: font
+    license: Open Font License via Google Fonts
+    author: Adobe
+    fontFamily: Source Sans 3
+    fontWeight: "900"
+    fontStyle: normal
+    fontDisplay: swap
+tokens:
+  color:
+    base: "#080a0d"
+    contrast: "#f5f7ef"
+    primary: "#00d8ff"
+    secondary: "#b8ff3d"
+    muted: "#141922"
+    surface: "#10141b"
+    surfaceAlt: "#171d27"
+    border: "#293241"
+    link: "#67e8ff"
+    buttonBg: "#b8ff3d"
+    buttonText: "#07090c"
+    focus: "#ff4fd8"
+  typography:
+    bodyFont: "\"Source Sans 3\", sans-serif"
+    headingFont: "Fraunces, Georgia, serif"
+    scale:
+      small: "0.875rem"
+      base: "1rem"
+      medium: "1.2rem"
+      large: "2rem"
+      xlarge: "3.4rem"
+      huge: "5.25rem"
+  spacing:
+    xs: "0.5rem"
+    sm: "1rem"
+    md: "1.5rem"
+    lg: "3rem"
+    xl: "4.75rem"
+    xxl: "6.5rem"
+  layout:
+    contentSize: "720px"
+    wideSize: "1220px"
+  radius:
+    sm: "2px"
+    md: "4px"
+    lg: "6px"
+  shadow:
+    sm: "0 12px 36px rgba(0, 0, 0, 0.26)"
+    md: "0 26px 72px rgba(0, 0, 0, 0.32)"
+    lg: "0 42px 110px rgba(0, 0, 0, 0.42)"
+templates:
+  index:
+    sections:
+      - kind: part
+        ref: header
+      - kind: hero
+        variant: editorial
+        eyebrow: "Essays after the feed goes quiet."
+        title: "Midnight Signal"
+        text: "Late-night reflections on culture, technology, city walks, music, and the bits of signal worth keeping."
+        cta:
+          label: "Latest transmissions"
+          url: "#latest"
+      - kind: featureGrid
+        items:
+          - title: "City walks & small revelations"
+            text: "Notes from sidewalks, corner stores, overheard lines, and the spaces in between."
+          - title: "Long reads for late thinkers"
+            text: "In-depth essays on culture, tech, media, and the ideas that do not fit in a thread."
+          - title: "Dispatches from the signal layer"
+            text: "Thoughts on tools, systems, sound, and the infrastructure shaping daily life."
+      - kind: postGrid
+        title: "Latest transmissions"
+        cta:
+          label: "View all ->"
+          url: "/category/essays/"
+        query:
+          perPage: 4
+      - kind: intro
+        variant: editor-note
+        title: "The internet is loud. This is where I write things that need room to breathe."
+        text: "Midnight Signal is an independent blog by a night person, coffee drinker, and curious observer. Thanks for being here."
+        cta:
+          label: "More about the signal"
+          url: "/about/"
+      - kind: ctaBand
+        title: "New transmissions, delivered."
+        text: "Get late-night essays, field notes, and signal logs in your inbox."
+        cta:
+          label: "Subscribe"
+          url: "/subscribe/"
+      - kind: part
+        ref: footer
