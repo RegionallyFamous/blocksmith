@@ -91,7 +91,7 @@ export function renderSection(section: BlueprintSection, blueprint: Blueprint, c
     case "postHeader":
       return postHeader(options.template);
     case "featuredImage":
-      return block("post-featured-image", { align: "wide", className: "blocksmith-featured-image" });
+      return featuredImage(options.template);
     case "postContent":
       return postContent(options.template);
     case "comments":
@@ -588,6 +588,20 @@ function postContent(template?: string): string {
   }
 
   return content;
+}
+
+function featuredImage(template?: string): string {
+  const image = block("post-featured-image", { className: "blocksmith-featured-image" });
+
+  if (!isSingularTemplate(template)) {
+    return block("post-featured-image", { align: "wide", className: "blocksmith-featured-image" });
+  }
+
+  return group(
+    `<div class="blocksmith-featured-image-rail" aria-hidden="true"></div>
+<div class="blocksmith-featured-image-frame">${image}</div>`,
+    { className: "blocksmith-featured-image-row" }
+  );
 }
 
 function notFoundSection(section: BlueprintSection): string {

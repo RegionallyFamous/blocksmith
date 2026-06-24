@@ -1322,6 +1322,24 @@ function renderBaseCss(blueprint: Blueprint): string {
   grid-template-columns: minmax(8rem, 0.26fr) minmax(0, 1fr);
 }
 
+.blocksmith-featured-image-row {
+  display: grid;
+  gap: var(--wp--preset--spacing--lg);
+  grid-template-columns: minmax(12rem, 0.36fr) minmax(0, 1fr);
+  margin: 0 auto;
+  max-width: var(--wp--style--global--wide-size, ${tokens.layout.wideSize});
+}
+
+.blocksmith-featured-image-frame {
+  min-width: 0;
+}
+
+.blocksmith-featured-image-row .blocksmith-featured-image {
+  margin-left: 0;
+  margin-right: 0;
+  max-width: none;
+}
+
 .blocksmith-featured-image {
   margin-bottom: var(--wp--preset--spacing--lg);
   margin-top: 0;
@@ -1859,8 +1877,13 @@ function renderBaseCss(blueprint: Blueprint): string {
 
   .blocksmith-archive-header,
   .blocksmith-post-header,
+  .blocksmith-featured-image-row,
   .blocksmith-page-header {
     grid-template-columns: 1fr;
+  }
+
+  .blocksmith-featured-image-rail {
+    display: none;
   }
 
   .blocksmith-archive-header .blocksmith-template-kicker,
